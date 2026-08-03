@@ -11,7 +11,7 @@
  *
  * Usage:
  *   import api from './axiosInstance'
- *   const { data } = await api.get('/api/notes')
+ *   const { data } = await api.get('/api/orders')
  */
 
 import axios from "axios";

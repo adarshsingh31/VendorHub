@@ -55,7 +55,6 @@ const navItems = [
   { icon: 'inventory_2',     label: 'Products'                      },
   { icon: 'group',           label: 'Customers'                     },
   { icon: 'analytics',       label: 'Analytics'                     },
-  { icon: 'sticky_note_2',   label: 'Notes',     path: '/notes'     },
   { icon: 'manage_accounts', label: 'Settings',  path: '/settings'  },
 ]
 
