@@ -1,5 +1,5 @@
 import express from "express";
-import { signup, login } from "../controllers/authController.js";
+import { signup, login, googleAuth, setPassword, changePassword } from "../controllers/authController.js";
 import protect from "../middleware/authMiddleware.js";
 
 const router = express.Router();
@@ -8,6 +8,17 @@ const router = express.Router();
 
 router.post("/signup", signup);
 router.post("/login", login);
+
+// POST /api/auth/google — verifies a Google ID token and returns a VendorHub JWT
+router.post("/google", googleAuth);
+
+// POST /api/auth/set-password — allows authenticated users to set/update their password
+// Protected: requires a valid JWT in the Authorization header
+router.post("/set-password", protect, setPassword);
+
+// PUT /api/auth/change-password — change password for users who already have one
+router.put("/change-password", protect, changePassword);
+
 
 // ─── Protected Routes (JWT required) ─────────────────────────────────────────
 

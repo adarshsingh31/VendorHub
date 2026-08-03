@@ -4,6 +4,9 @@ import LoginPage from './pages/LoginPage'
 import SignUpPage from './pages/SignUpPage'
 import ForgotPasswordPage from './pages/ForgotPasswordPage'
 import DashboardPage from './pages/DashboardPage'
+import NotesPage from './pages/NotesPage'
+import SetPasswordPage from './pages/SetPasswordPage'
+import SettingsPage from './pages/SettingsPage'
 import './index.css'
 
 function App() {
@@ -15,6 +18,8 @@ function App() {
         <Route path="/signup" element={<SignUpPage />} />
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
         <Route path="/dashboard" element={<DashboardPage />} />
+        <Route path="/notes" element={<NotesPage />} />
+        <Route path="/settings" element={<SettingsPage />} />
       </Routes>
     </BrowserRouter>
   )

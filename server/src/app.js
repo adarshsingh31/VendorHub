@@ -1,13 +1,25 @@
 import express from "express";
 import cors from "cors";
 import authRoutes from "./routes/authRoutes.js";
+import noteRoutes from "./routes/noteRoutes.js";
 
 const app = express();
 
-// CORS Middleware (with credentials support for sessions/cookies)
+// CORS Middleware — supports comma-separated CLIENT_URL list for multiple dev ports
+const allowedOrigins = (process.env.CLIENT_URL || 'http://localhost:5173')
+  .split(',')
+  .map((o) => o.trim())
+
 app.use(
   cors({
-    origin: process.env.CLIENT_URL || "http://localhost:5173",
+    origin: (origin, callback) => {
+      // Allow requests with no origin (e.g. Postman, mobile apps)
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true)
+      } else {
+        callback(new Error(`CORS blocked: ${origin}`))
+      }
+    },
     credentials: true,
   })
 );
@@ -18,6 +30,7 @@ app.use(express.urlencoded({ extended: true }));
 
 // Routes
 app.use("/api/auth", authRoutes);
+app.use("/api/notes", noteRoutes);
 
 // Test Route
 app.get("/", (req, res) => {

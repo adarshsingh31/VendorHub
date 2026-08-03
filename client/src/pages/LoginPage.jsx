@@ -1,24 +1,126 @@
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
+import axios from 'axios'
+import GoogleSignInButton from '../components/GoogleSignInButton'
+
+// Base URL for the Express backend — set in client/.env as VITE_API_URL
+const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000'
 
 export default function LoginPage() {
-  const [showPassword, setShowPassword] = useState(false)
+  const navigate = useNavigate()
 
+  // ── Email / password form state ──────────────────────────────────────────
+  const [showPassword, setShowPassword] = useState(false)
+  const [loading, setLoading]           = useState(false)
+  const [error, setError]               = useState('')
+  const [form, setForm]                 = useState({ email: '', password: '' })
+
+  // ── Google-specific loading state (separate so the two buttons don't clash) ─
+  const [googleLoading, setGoogleLoading] = useState(false)
+
+  // ── Shared helper: persist auth data and redirect ────────────────────────
+  const handleAuthSuccess = ({ token, user }) => {
+    // Store the VendorHub JWT and user profile in localStorage
+    localStorage.setItem('vh_token', token)
+    localStorage.setItem('vh_user', JSON.stringify(user))
+    // Send the user to their dashboard
+    navigate('/dashboard')
+  }
+
+  // ── Email / password handlers ────────────────────────────────────────────
+  const handleChange = (e) => {
+    setForm(prev => ({ ...prev, [e.target.name]: e.target.value }))
+    if (error) setError('')
+  }
+
+  const handleSubmit = async (e) => {
+    e.preventDefault()
+    setLoading(true)
+    setError('')
+
+    try {
+      const res = await fetch(`${API_BASE}/api/auth/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: form.email, password: form.password }),
+      })
+
+      const data = await res.json()
+
+      if (!res.ok) {
+        setError(data.message || 'Login failed. Please try again.')
+        return
+      }
+
+      handleAuthSuccess(data)
+    } catch {
+      setError('Cannot connect to server. Please check your connection.')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  // ── Google OAuth handler ─────────────────────────────────────────────────
+  /**
+   * Called by <GoogleSignInButton> when Google successfully returns a credential.
+   *
+   * Flow:
+   *   1. User clicks "Continue with Google" → Google account picker opens.
+   *   2. User selects account → Google returns a credential (ID token).
+   *   3. We POST that credential to our backend for verification.
+   *   4. Backend verifies it with Google, upserts the user, and returns a JWT.
+   *   5. We store the JWT and redirect to the dashboard.
+   */
+  const handleGoogleSuccess = async (credential) => {
+    setGoogleLoading(true)
+    setError('')
+
+    try {
+      // Send the Google ID token to POST /api/auth/google
+      const { data } = await axios.post(`${API_BASE}/api/auth/google`, {
+        credential,
+      })
+
+      if (!data.success) {
+        setError(data.message || 'Google login failed. Please try again.')
+        return
+      }
+
+      handleAuthSuccess(data)
+    } catch (err) {
+      // axios wraps HTTP errors in err.response
+      const message = err.response?.data?.message
+        || 'Google login failed. Please try again.'
+      setError(message)
+    } finally {
+      setGoogleLoading(false)
+    }
+  }
+
+  // Called if the Google popup is dismissed or an OAuth error occurs
+  const handleGoogleError = (message) => {
+    setError(message)
+    setGoogleLoading(false)
+  }
+
+  // ── Render ────────────────────────────────────────────────────────────────
   return (
     <div className="bg-[#f8f9ff] text-[#0b1c30] min-h-screen flex flex-col antialiased">
-      {/* Header */}
+
+      {/* ── Header ────────────────────────────────────────────────────────── */}
       <header className="fixed top-0 w-full z-50 bg-[#f8f9ff]/70 backdrop-blur-xl shadow-sm border-b border-[#c3c6d7]/30 h-20 flex items-center px-4 md:px-8">
         <div className="max-w-[1280px] w-full mx-auto flex justify-between items-center">
-          <div className="flex items-center gap-2">
+          <Link to="/" className="flex items-center gap-2">
             <span className="material-symbols-outlined icon-fill text-[#004ac6]">hub</span>
             <span className="text-2xl font-bold tracking-tight text-[#004ac6]">VendorHub</span>
-          </div>
+          </Link>
         </div>
       </header>
 
-      {/* Main Content Split Screen */}
+      {/* ── Main Split Screen ──────────────────────────────────────────────── */}
       <main className="flex-1 flex flex-col md:flex-row mt-20">
-        {/* Left Side: Illustration */}
+
+        {/* Left: Illustration */}
         <div className="hidden md:flex md:w-1/2 bg-[#eff4ff] relative overflow-hidden flex-col justify-center items-center p-12">
           <div className="absolute inset-0 z-0">
             <div
@@ -35,17 +137,44 @@ export default function LoginPage() {
           </div>
         </div>
 
-        {/* Right Side: Login Form */}
+        {/* Right: Login Form */}
         <div className="w-full md:w-1/2 flex items-center justify-center p-4 md:p-8 bg-white">
           <div className="w-full max-w-[420px] bg-white md:rounded-xl md:shadow-[0_1px_3px_0_rgba(0,0,0,0.05),_0_1px_2px_-1px_rgba(0,0,0,0.05)] md:p-12 flex flex-col gap-6">
-            {/* Header */}
+
+            {/* Heading */}
             <div className="text-center md:text-left mb-2">
               <h1 className="text-[32px] font-bold text-[#0b1c30] mb-1">Welcome Back 👋</h1>
               <p className="text-base text-[#434655]">Login to continue shopping from nearby vendors.</p>
             </div>
 
-            {/* Form */}
-            <form className="flex flex-col gap-4 w-full">
+            {/* ── Error Banner ─────────────────────────────────────────────── */}
+            {error && (
+              <div className="flex items-center gap-3 px-4 py-3 bg-red-50 border border-red-200 rounded-lg text-sm text-[#ba1a1a]">
+                <span className="material-symbols-outlined text-[18px] shrink-0">error</span>
+                {error}
+              </div>
+            )}
+
+            {/* ── Google Sign-In ────────────────────────────────────────────
+              Placed ABOVE the divider / form so it's the primary CTA.
+              GoogleSignInButton handles the popup + calls handleGoogleSuccess.
+            ─────────────────────────────────────────────────────────────── */}
+            <GoogleSignInButton
+              onSuccess={handleGoogleSuccess}
+              onError={handleGoogleError}
+              loading={googleLoading}
+            />
+
+            {/* ── Divider ───────────────────────────────────────────────────── */}
+            <div className="relative flex items-center">
+              <div className="flex-grow border-t border-[#c3c6d7]/30" />
+              <span className="flex-shrink-0 mx-4 text-xs text-[#737686] uppercase tracking-wider">or sign in with email</span>
+              <div className="flex-grow border-t border-[#c3c6d7]/30" />
+            </div>
+
+            {/* ── Email / Password Form ────────────────────────────────────── */}
+            <form className="flex flex-col gap-4 w-full" onSubmit={handleSubmit}>
+
               {/* Email */}
               <div className="flex flex-col gap-1">
                 <label className="text-sm font-semibold text-[#434655]" htmlFor="email">Email</label>
@@ -60,6 +189,8 @@ export default function LoginPage() {
                     placeholder="name@example.com"
                     required
                     type="email"
+                    value={form.email}
+                    onChange={handleChange}
                   />
                 </div>
               </div>
@@ -78,6 +209,8 @@ export default function LoginPage() {
                     placeholder="••••••••"
                     required
                     type={showPassword ? 'text' : 'password'}
+                    value={form.password}
+                    onChange={handleChange}
                   />
                   <button
                     className="absolute inset-y-0 right-0 pr-3 flex items-center text-[#737686] hover:text-[#0b1c30] transition-colors focus:outline-none"
@@ -89,7 +222,7 @@ export default function LoginPage() {
                 </div>
               </div>
 
-              {/* Options */}
+              {/* Remember Me + Forgot Password */}
               <div className="flex items-center justify-between mt-1 mb-2">
                 <label className="flex items-center gap-2 cursor-pointer">
                   <input className="w-4 h-4 rounded border-[#c3c6d7] text-[#004ac6] focus:ring-[#004ac6]/20 bg-white" type="checkbox" />
@@ -102,33 +235,17 @@ export default function LoginPage() {
 
               {/* Submit */}
               <button
-                className="w-full bg-gradient-to-r from-[#004ac6] to-[#0053db] text-white text-sm font-semibold py-3 rounded-lg shadow-sm border-b border-white/20 btn-primary flex justify-center items-center gap-2 transition-all duration-150"
+                className="w-full bg-gradient-to-r from-[#004ac6] to-[#0053db] text-white text-sm font-semibold py-3 rounded-lg shadow-sm border-b border-white/20 btn-primary flex justify-center items-center gap-2 transition-all duration-150 disabled:opacity-60 disabled:cursor-not-allowed"
                 type="submit"
+                disabled={loading || googleLoading}
               >
-                <span>Login</span>
-                <span className="material-symbols-outlined">arrow_forward</span>
+                {loading ? (
+                  <><div className="loader" /> Signing in…</>
+                ) : (
+                  <><span>Login</span><span className="material-symbols-outlined">arrow_forward</span></>
+                )}
               </button>
             </form>
-
-            {/* Divider */}
-            <div className="relative flex items-center py-1">
-              <div className="flex-grow border-t border-[#c3c6d7]/30" />
-              <span className="flex-shrink-0 mx-4 text-xs text-[#737686] uppercase tracking-wider">OR</span>
-              <div className="flex-grow border-t border-[#c3c6d7]/30" />
-            </div>
-
-            {/* Social Login */}
-            <div className="flex flex-col gap-3">
-              <button className="w-full bg-white border border-[#c3c6d7]/50 text-[#0b1c30] text-sm font-semibold py-3 rounded-lg flex justify-center items-center gap-3 hover:bg-[#f1f5f9] transition-colors duration-150 shadow-sm" type="button">
-                <svg className="w-5 h-5" viewBox="0 0 24 24">
-                  <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4" />
-                  <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853" />
-                  <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05" />
-                  <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335" />
-                </svg>
-                Continue with Google
-              </button>
-            </div>
 
             {/* Sign Up Link */}
             <p className="text-center text-sm text-[#434655] mt-2">
@@ -139,7 +256,7 @@ export default function LoginPage() {
         </div>
       </main>
 
-      {/* Footer */}
+      {/* ── Footer ────────────────────────────────────────────────────────── */}
       <footer className="w-full bg-white border-t border-[#c3c6d7]/20 py-6 mt-auto">
         <div className="max-w-[1280px] mx-auto px-4 md:px-8 flex flex-col md:flex-row justify-between items-center gap-4">
           <p className="text-sm text-[#5d5f5f]">© 2024 VendorHub Inc. All rights reserved.</p>

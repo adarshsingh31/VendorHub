@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 
 const stats = [
   {
@@ -50,12 +50,13 @@ const recentOrders = [
 ]
 
 const navItems = [
-  { icon: 'dashboard', label: 'Dashboard', active: true },
-  { icon: 'shopping_cart', label: 'Orders' },
-  { icon: 'inventory_2', label: 'Products' },
-  { icon: 'group', label: 'Customers' },
-  { icon: 'analytics', label: 'Analytics' },
-  { icon: 'settings', label: 'Settings' },
+  { icon: 'dashboard',       label: 'Dashboard', path: '/dashboard' },
+  { icon: 'shopping_cart',   label: 'Orders'                        },
+  { icon: 'inventory_2',     label: 'Products'                      },
+  { icon: 'group',           label: 'Customers'                     },
+  { icon: 'analytics',       label: 'Analytics'                     },
+  { icon: 'sticky_note_2',   label: 'Notes',     path: '/notes'     },
+  { icon: 'manage_accounts', label: 'Settings',  path: '/settings'  },
 ]
 
 const statusStyle = {
@@ -65,6 +66,7 @@ const statusStyle = {
 }
 
 export default function DashboardPage() {
+  const navigate = useNavigate()
   const [activeNav, setActiveNav] = useState('Dashboard')
 
   return (
@@ -84,7 +86,13 @@ export default function DashboardPage() {
           {navItems.map((item) => (
             <button
               key={item.label}
-              onClick={() => setActiveNav(item.label)}
+              onClick={() => {
+                if (item.path) {
+                  navigate(item.path)
+                } else {
+                  setActiveNav(item.label)
+                }
+              }}
               className={`flex items-center gap-3 px-3 py-2 rounded-lg text-left w-full transition-all duration-200 ${
                 activeNav === item.label
                   ? 'text-[#004ac6] bg-[#004ac6]/10 font-bold'
