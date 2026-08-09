@@ -1,22 +1,33 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
+import axios from 'axios'
+
+const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000'
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState('')
   const [loading, setLoading] = useState(false)
   const [success, setSuccess] = useState(false)
+  const [error, setError] = useState('')
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
     setLoading(true)
-    setTimeout(() => {
-      setLoading(false)
+    setError('')
+    
+    try {
+      await axios.post(`${API_BASE}/api/auth/forgot-password`, { email })
       setSuccess(true)
-    }, 1500)
+    } catch (err) {
+      setError(err.response?.data?.message || 'Something went wrong. Please try again.')
+    } finally {
+      setLoading(false)
+    }
   }
 
   const handleReset = () => {
     setSuccess(false)
+    setError('')
     setEmail('')
   }
 
@@ -48,6 +59,14 @@ export default function ForgotPasswordPage() {
                   Enter your registered email address and we'll send you a password reset link.
                 </p>
               </div>
+
+              {/* Error Message */}
+              {error && (
+                <div className="w-full flex items-center gap-3 px-4 py-3 mb-4 bg-red-50 border border-red-200 rounded-lg text-sm text-[#ba1a1a] fade-in">
+                  <span className="material-symbols-outlined text-[18px] shrink-0">error</span>
+                  {error}
+                </div>
+              )}
 
               {/* Form */}
               <form className="w-full space-y-4" onSubmit={handleSubmit}>
