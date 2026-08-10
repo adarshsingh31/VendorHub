@@ -1,5 +1,5 @@
 import express from "express";
-import { signup, login, googleAuth, setPassword, changePassword } from "../controllers/authController.js";
+import { signup, login, googleAuth, setPassword, changePassword, forgotPassword, resetPassword } from "../controllers/authController.js";
 import protect from "../middleware/authMiddleware.js";
 
 const router = express.Router();
@@ -8,6 +8,8 @@ const router = express.Router();
 
 router.post("/signup", signup);
 router.post("/login", login);
+router.post("/forgot-password", forgotPassword);
+router.post("/reset-password/:token", resetPassword);
 
 // POST /api/auth/google — verifies a Google ID token and returns a VendorHub JWT
 router.post("/google", googleAuth);

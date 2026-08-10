@@ -2,7 +2,8 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { OAuth2Client } from "google-auth-library";
 import User from "../models/User.js";
-
+import crypto from "crypto";
+import sendEmail from "../utils/sendEmail.js";
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 // Regex for basic email format validation
@@ -13,12 +14,11 @@ const signToken = (user) =>
   jwt.sign(
     { userId: user._id, email: user.email, role: user.role },
     process.env.JWT_SECRET || "fallback_jwt_secret",
-    { expiresIn: "7d" }
+    { expiresIn: "7d" },
   );
 
 // Google OAuth2 client — initialized once with the server-side Client ID
 const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
-
 
 /**
  * Handle new user signup
@@ -68,7 +68,7 @@ export const signup = async (req, res) => {
       name,
       email,
       password: hashedPassword,
-      role: "user", // default role
+      role: "buyer", // default role — all new users start as buyers
     });
 
     // 7. Generate JWT using the shared helper
@@ -230,7 +230,7 @@ export const googleAuth = async (req, res) => {
         googleId,
         avatar: picture,
         authProvider: "google",
-        role: "user",
+        role: "buyer",
       });
     }
 
@@ -284,17 +284,35 @@ export const setPassword = async (req, res) => {
     const { password, confirmPassword } = req.body;
 
     if (!password || !confirmPassword) {
-      return res.status(400).json({ success: false, message: "Please provide both password and confirmPassword" });
+      return res.status(400).json({
+        success: false,
+        message: "Please provide both password and confirmPassword",
+      });
     }
     if (password.length < 8) {
-      return res.status(400).json({ success: false, message: "Password must be at least 8 characters long" });
+      return res.status(400).json({
+        success: false,
+        message: "Password must be at least 8 characters long",
+      });
     }
     if (password !== confirmPassword) {
-      return res.status(400).json({ success: false, message: "Passwords do not match" });
+      return res
+        .status(400)
+        .json({ success: false, message: "Passwords do not match" });
     }
 
     const user = await User.findById(req.user.id);
-    if (!user) return res.status(404).json({ success: false, message: "User not found" });
+    if (!user)
+      return res
+        .status(404)
+        .json({ success: false, message: "User not found" });
+
+    if (user.password) {
+      return res.status(400).json({
+        success: false,
+        message: "Password is already set. Use Change Password instead.",
+      });
+    }
 
     user.password = await bcrypt.hash(password, 10);
     if (user.authProvider === "google") user.authProvider = "both";
@@ -302,12 +320,15 @@ export const setPassword = async (req, res) => {
 
     return res.status(200).json({
       success: true,
-      message: "Password set successfully. You can now sign in with email and password.",
+      message:
+        "Password set successfully. You can now sign in with email and password.",
       hasPassword: true,
     });
   } catch (error) {
     console.error("Set Password Error:", error);
-    return res.status(500).json({ success: false, message: "Internal server error" });
+    return res
+      .status(500)
+      .json({ success: false, message: "Internal server error" });
   }
 };
 
@@ -327,7 +348,8 @@ export const changePassword = async (req, res) => {
     if (!currentPassword || !newPassword || !confirmPassword) {
       return res.status(400).json({
         success: false,
-        message: "Please provide currentPassword, newPassword, and confirmPassword",
+        message:
+          "Please provide currentPassword, newPassword, and confirmPassword",
       });
     }
 
@@ -349,13 +371,17 @@ export const changePassword = async (req, res) => {
 
     // 4. Load user
     const user = await User.findById(req.user.id);
-    if (!user) return res.status(404).json({ success: false, message: "User not found" });
+    if (!user)
+      return res
+        .status(404)
+        .json({ success: false, message: "User not found" });
 
     // 5. Guard: cannot change password if none is set
     if (!user.password) {
       return res.status(400).json({
         success: false,
-        message: "No password is set on this account. Use Set Password instead.",
+        message:
+          "No password is set on this account. Use Set Password instead.",
       });
     }
 
@@ -387,6 +413,135 @@ export const changePassword = async (req, res) => {
     });
   } catch (error) {
     console.error("Change Password Error:", error);
-    return res.status(500).json({ success: false, message: "Internal server error" });
+    return res
+      .status(500)
+      .json({ success: false, message: "Internal server error" });
+  }
+};
+export const forgotPassword = async (req, res) => {
+  try {
+    // 1. Get email from request
+    const { email } = req.body;
+
+    // 2. Find user
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res.status(404).json({
+        message: "User not found",
+      });
+    }
+
+    // 3. Generate random reset token
+    const resetToken = crypto.randomBytes(32).toString("hex");
+
+    // 4. Hash the token before saving it
+    const hashedToken = crypto
+      .createHash("sha256")
+      .update(resetToken)
+      .digest("hex");
+
+    // 5. Save hashed token in database
+    user.resetPasswordToken = hashedToken;
+
+    // 6. Token expires after 15 minutes
+    user.resetPasswordExpire = Date.now() + 15 * 60 * 1000;
+
+    // 7. Save changes
+    await user.save();
+
+    const resetUrl = `http://localhost:5173/reset-password/${resetToken}`;
+
+    const message = `
+      <h2>VendorHub Password Reset</h2>
+
+      <p>You requested to reset your VendorHub password.</p>
+
+      <p>
+          <a href="${resetUrl}">
+              Reset Password
+          </a>
+      </p>
+
+      <p>This link will expire in 15 minutes.</p>
+    `;
+
+    try {
+      await sendEmail({
+        email: user.email,
+        subject: "VendorHub Password Reset",
+        message: message,
+      });
+
+      res.status(200).json({
+        message: "Password reset email sent",
+      });
+    } catch (emailError) {
+      user.resetPasswordToken = undefined;
+      user.resetPasswordExpire = undefined;
+      await user.save({ validateBeforeSave: false });
+
+      console.error("Email Error:", emailError);
+      return res.status(500).json({
+        message: "Email could not be sent",
+      });
+    }
+  } catch (error) {
+    console.error(error);
+
+    res.status(500).json({
+      message: "Server error",
+    });
+  }
+};
+
+export const resetPassword = async (req, res) => {
+  try {
+    // Get token from URL
+    const { token } = req.params;
+
+    // Get new password
+    const { password } = req.body;
+
+    // Hash the token
+    const hashedToken = crypto
+      .createHash("sha256")
+      .update(token)
+      .digest("hex");
+
+    // Find user with valid token
+    const user = await User.findOne({
+      resetPasswordToken: hashedToken,
+      resetPasswordExpire: {
+        $gt: Date.now(),
+      },
+    });
+
+    // Token invalid or expired
+    if (!user) {
+      return res.status(400).json({
+        message: "Invalid or expired reset token",
+      });
+    }
+
+    // Hash the new password
+    user.password = await bcrypt.hash(password, 10); // Using standard bcrypt hashing
+
+    // Remove reset token
+    user.resetPasswordToken = undefined;
+    user.resetPasswordExpire = undefined;
+
+    // Save user
+    await user.save();
+
+    res.status(200).json({
+      message: "Password reset successfully",
+    });
+  } catch (error) {
+    console.error(error);
+
+    res.status(500).json({
+      message: "Server error",
+    });
   }
 };
