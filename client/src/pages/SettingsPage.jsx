@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import api from '../services/axiosInstance'
+import { useAuth } from '../context/AuthContext'
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -385,7 +386,11 @@ export default function SettingsPage() {
           </div>
           <div className="hidden md:block text-lg font-semibold text-[#0b1c30]">Account Settings</div>
           <button
-            onClick={() => navigate('/dashboard')}
+            onClick={() => {
+              const role = JSON.parse(localStorage.getItem('vh_user') || '{}')?.role
+              const map = { buyer: '/buyer', seller: '/seller', admin: '/admin' }
+              navigate(map[role] || '/buyer')
+            }}
             className="ml-auto flex items-center gap-1.5 text-sm font-semibold text-[#434655] hover:text-[#004ac6] transition-colors"
           >
             <span className="material-symbols-outlined text-[18px]">arrow_back</span>

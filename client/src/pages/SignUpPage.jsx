@@ -1,320 +1,298 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import { Mail, User, ShoppingBag, Store, Info, Check } from 'lucide-react'
 import axios from 'axios'
+import AuthLayout from '../components/AuthLayout.jsx'
+import VHInput from '../components/VHInput.jsx'
+import VHPasswordInput from '../components/VHPasswordInput.jsx'
+import PasswordStrengthIndicator from '../components/PasswordStrengthIndicator.jsx'
+import VHButton from '../components/VHButton.jsx'
 import GoogleSignInButton from '../components/GoogleSignInButton'
+import { useToast } from '../components/ToastProvider.jsx'
+import { useAuth } from '../context/AuthContext'
 
 const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000'
+const ROLE_DASHBOARD = { buyer: '/buyer', seller: '/seller', admin: '/admin' }
+
+const roles = [
+  {
+    id: 'buyer',
+    icon: ShoppingBag,
+    title: 'Shop on VendorHub',
+    subtitle: 'Buyer',
+  },
+  {
+    id: 'seller',
+    icon: Store,
+    title: 'Sell on VendorHub',
+    subtitle: 'Seller',
+  },
+]
+
+function validate({ fullName, email, password, confirmPassword, agree }) {
+  const errors = {}
+  if (!fullName.trim()) errors.fullName = 'Full name is required.'
+  if (!email) errors.email = 'Email is required.'
+  else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) errors.email = 'Enter a valid email address.'
+  if (!password) errors.password = 'Password is required.'
+  else if (password.length < 8) errors.password = 'Password must be at least 8 characters.'
+  if (confirmPassword !== password) errors.confirmPassword = 'Passwords do not match.'
+  if (!agree) errors.agree = 'You must agree to the Terms & Privacy Policy.'
+  return errors
+}
 
 export default function SignUpPage() {
-  const navigate = useNavigate()
-  const [showPassword, setShowPassword] = useState(false)
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState('')
-  const [password, setPassword] = useState('')
-  const [confirmPassword, setConfirmPassword] = useState('')
-  const [strength, setStrength] = useState(0)
-  const [strengthText, setStrengthText] = useState('Password strength')
-  const [form, setForm] = useState({ name: '', email: '', phone: '' })
-
-  // ── Google-specific loading state ────────────────────────────────────────
+  const [form, setForm] = useState({
+    fullName: '',
+    email: '',
+    password: '',
+    confirmPassword: '',
+    agree: false,
+    role: 'buyer',
+  })
+  const [errors, setErrors] = useState({})
+  const [submitting, setSubmitting] = useState(false)
   const [googleLoading, setGoogleLoading] = useState(false)
+  const { toast } = useToast()
+  const { login, isAuthenticated, role } = useAuth()
+  const navigate = useNavigate()
 
-  const handleChange = (e) => {
-    setForm(prev => ({ ...prev, [e.target.name]: e.target.value }))
-    if (error) setError('')
+  useEffect(() => {
+    if (isAuthenticated) {
+      const destination = ROLE_DASHBOARD[role] || '/buyer'
+      navigate(destination, { replace: true })
+    }
+  }, [isAuthenticated, role, navigate])
+
+  const handleChange = (field) => (e) => {
+    const value = field === 'agree' ? e.target.checked : e.target.value
+    setForm((f) => ({ ...f, [field]: value }))
+    if (errors[field]) setErrors((er) => ({ ...er, [field]: undefined }))
   }
 
-  const calcStrength = (val) => {
-    let s = 0
-    if (val.length > 5) s++
-    if (val.length > 8) s++
-    if (/[A-Z]/.test(val)) s++
-    if (/[0-9]/.test(val)) s++
-    if (/[^A-Za-z0-9]/.test(val)) s++
-    s = Math.min(s, 4)
-    setStrength(s)
-    if (!val) { setStrengthText('Password strength'); return }
-    const labels = ['', 'Weak', 'Fair', 'Good', 'Strong']
-    setStrengthText(labels[s] || 'Weak')
+  const handleAuthSuccess = ({ token, user }) => {
+    login({ token, user })
+    const destination = ROLE_DASHBOARD[user?.role] || '/buyer'
+    navigate(destination)
   }
-
-  const strengthColors = ['', 'bg-[#ba1a1a]', 'bg-[#ffb95f]', 'bg-[#34A853]', 'bg-[#004ac6]']
-  const passwordMismatch = confirmPassword && password !== confirmPassword
 
   const handleSubmit = async (e) => {
     e.preventDefault()
+    const validation = validate(form)
+    setErrors(validation)
+    if (Object.keys(validation).length) return
 
-    if (passwordMismatch) {
-      setError('Passwords do not match.')
-      return
-    }
-    if (password.length < 8) {
-      setError('Password must be at least 8 characters long.')
-      return
-    }
-
-    setLoading(true)
-    setError('')
-
+    setSubmitting(true)
     try {
       const res = await fetch(`${API_BASE}/api/auth/signup`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          name: form.name,
+          name: form.fullName,
           email: form.email,
-          password,
+          password: form.password,
+          role: form.role,
         }),
       })
 
       const data = await res.json()
 
       if (!res.ok) {
-        setError(data.message || 'Signup failed. Please try again.')
-        return
+        throw new Error(data.message || 'Registration failed. Please try again.')
       }
 
-      // Store token and user info
-      localStorage.setItem('vh_token', data.token)
-      localStorage.setItem('vh_user', JSON.stringify(data.user))
+      toast({
+        variant: 'success',
+        title: 'Account created',
+        description:
+          form.role === 'seller'
+            ? 'Your seller account is pending admin approval.'
+            : 'Welcome to VendorHub!',
+      })
 
-      // Redirect to dashboard
-      navigate('/dashboard')
+      handleAuthSuccess(data)
     } catch (err) {
-      setError('Cannot connect to server. Please check your connection.')
+      toast({ variant: 'error', title: 'Sign up failed', description: err.message })
+      setErrors({ form: err.message })
     } finally {
-      setLoading(false)
+      setSubmitting(false)
     }
   }
 
-  // ── Google OAuth handler ─────────────────────────────────────────────────
   const handleGoogleSuccess = async (credential) => {
     setGoogleLoading(true)
-    setError('')
+    setErrors({})
+
     try {
-      const { data } = await axios.post(`${API_BASE}/api/auth/google`, { credential })
+      const { data } = await axios.post(`${API_BASE}/api/auth/google`, {
+        credential,
+      })
+
       if (!data.success) {
-        setError(data.message || 'Google sign-up failed. Please try again.')
-        return
+        throw new Error(data.message || 'Google signup failed. Please try again.')
       }
-      localStorage.setItem('vh_token', data.token)
-      localStorage.setItem('vh_user', JSON.stringify(data.user))
-      navigate('/dashboard')
+
+      toast({ variant: 'success', title: 'Welcome to VendorHub!', description: 'Google authentication successful.' })
+      handleAuthSuccess(data)
     } catch (err) {
-      const message = err.response?.data?.message || 'Google sign-up failed. Please try again.'
-      setError(message)
+      const message = err.response?.data?.message || err.message || 'Google signup failed. Please try again.'
+      toast({ variant: 'error', title: 'Google signup failed', description: message })
+      setErrors({ form: message })
     } finally {
       setGoogleLoading(false)
     }
   }
 
   const handleGoogleError = (message) => {
-    setError(message)
+    toast({ variant: 'error', title: 'Google signup failed', description: message })
+    setErrors({ form: message })
     setGoogleLoading(false)
   }
 
   return (
-    <div className="bg-[#f8f9ff] text-[#0b1c30] antialiased min-h-screen flex flex-col md:flex-row">
-      {/* Left: Illustration */}
-      <div className="hidden md:flex flex-col flex-1 bg-[#dce9ff] relative overflow-hidden justify-center items-center p-8">
-        <div className="absolute top-0 left-0 w-[500px] h-[500px] bg-[#2563eb]/20 rounded-full blur-[100px] -translate-x-1/2 -translate-y-1/2" />
-        <div className="absolute bottom-0 right-0 w-[600px] h-[600px] bg-[#996100]/10 rounded-full blur-[120px] translate-x-1/3 translate-y-1/3" />
-        <div className="relative z-10 max-w-lg text-center">
-          <h1 className="text-5xl font-bold text-[#004ac6] tracking-tight mb-4">VendorHub</h1>
-          <p className="text-lg text-[#434655] mb-12">Connecting local vendors with a vibrant community of buyers. Scale your business with powerful tools.</p>
-          <div className="relative w-full aspect-square rounded-xl overflow-hidden shadow-2xl shadow-[#2563eb]/20 border border-[#c3c6d7]/30">
-            <img
-              className="w-full h-full object-cover"
-              src="https://lh3.googleusercontent.com/aida-public/AB6AXuAPC6MOUf9JjgMCxUDr45x62FN9lW75ovBxyRQ0nB2a8Jjixkgr496asiP0aFT3OTcjEtNUTrKRzmKz_0anctn0lXDVENx7xi9Hgw4aKsoB0qrXv57O0QP2NWKCffzqqSK4n8PAO0y9txG80gSSbPUIQ6HOq_buf8Bcm9gJwaTvqyGNeItN91wjFNyOtI6AaCiBffKGIuolMKGLbJcNHEP1-djQ2y7icIuX_uuedIO5q1JdG7MfaKI8VNWwxJMveIiXOSbUcBHDgPrS"
-              alt="VendorHub marketplace"
-            />
+    <AuthLayout
+      heading="Join your local marketplace today"
+      subheading="Create an account to start shopping local sellers or launch your own store."
+    >
+      <h2 className="font-display text-[1.75rem] font-extrabold tracking-tight text-ink-900">
+        Create your VendorHub account
+      </h2>
+      <p className="mt-1.5 text-[15px] text-ink-500">Join your local marketplace today.</p>
+
+      <form onSubmit={handleSubmit} className="mt-7 space-y-5" noValidate>
+        {errors.form && (
+          <div className="rounded-xl border border-danger-500/20 bg-danger-50 px-4 py-3 text-sm text-danger-500">
+            {errors.form}
           </div>
-        </div>
-      </div>
+        )}
 
-      {/* Right: Sign Up Form */}
-      <div className="flex-1 flex flex-col justify-center px-4 py-12 sm:px-6 lg:flex-none lg:px-20 xl:px-24 bg-white z-10 shadow-[-10px_0_30px_-15px_rgba(0,0,0,0.05)] relative min-h-screen">
-        {/* Mobile Brand */}
-        <div className="md:hidden flex items-center justify-center mb-12">
-          <span className="material-symbols-outlined text-[#004ac6] text-4xl mr-2 icon-fill">hub</span>
-          <span className="text-[32px] font-bold tracking-tight text-[#004ac6]">VendorHub</span>
-        </div>
-
-        <div className="mx-auto w-full max-w-sm lg:w-96">
-          <div>
-            <h2 className="text-2xl font-semibold text-[#0b1c30] mb-2">Create Your Account</h2>
-            <p className="text-sm text-[#434655]">Join VendorHub and start shopping locally.</p>
-          </div>
-
-          <div className="mt-6">
-            {/* Error Banner */}
-            {error && (
-              <div className="flex items-center gap-3 px-4 py-3 mb-4 bg-red-50 border border-red-200 rounded-lg text-sm text-[#ba1a1a] fade-in">
-                <span className="material-symbols-outlined text-[18px] shrink-0">error</span>
-                {error}
-              </div>
-            )}
-
-            <form className="space-y-4" id="signupForm" onSubmit={handleSubmit}>
-              {/* Full Name */}
-              <div>
-                <label className="block text-sm font-semibold text-[#434655] mb-1" htmlFor="name">Full Name</label>
-                <input
-                  autoComplete="name"
-                  className="appearance-none block w-full px-3 py-3 border border-[#c3c6d7] rounded-lg bg-white text-[#0b1c30] placeholder-[#737686] focus:outline-none focus:ring-2 focus:ring-[#004ac6] focus:border-[#004ac6] text-sm transition-all duration-150 input-glow"
-                  id="name"
-                  name="name"
-                  required
-                  type="text"
-                  value={form.name}
-                  onChange={handleChange}
-                />
-              </div>
-
-              {/* Email */}
-              <div>
-                <label className="block text-sm font-semibold text-[#434655] mb-1" htmlFor="email">Email address</label>
-                <input
-                  autoComplete="email"
-                  className="appearance-none block w-full px-3 py-3 border border-[#c3c6d7] rounded-lg bg-white text-[#0b1c30] placeholder-[#737686] focus:outline-none focus:ring-2 focus:ring-[#004ac6] focus:border-[#004ac6] text-sm transition-all duration-150 input-glow"
-                  id="email"
-                  name="email"
-                  required
-                  type="email"
-                  value={form.email}
-                  onChange={handleChange}
-                />
-              </div>
-
-              {/* Phone */}
-              <div>
-                <label className="block text-sm font-semibold text-[#434655] mb-1" htmlFor="phone">Phone Number</label>
-                <input
-                  autoComplete="tel"
-                  className="appearance-none block w-full px-3 py-3 border border-[#c3c6d7] rounded-lg bg-white text-[#0b1c30] placeholder-[#737686] focus:outline-none focus:ring-2 focus:ring-[#004ac6] focus:border-[#004ac6] text-sm transition-all duration-150 input-glow"
-                  id="phone"
-                  name="phone"
-                  type="tel"
-                  value={form.phone}
-                  onChange={handleChange}
-                />
-              </div>
-
-              {/* Password */}
-              <div>
-                <label className="block text-sm font-semibold text-[#434655] mb-1" htmlFor="password">Password</label>
-                <div className="mt-1 relative">
-                  <input
-                    autoComplete="new-password"
-                    className="appearance-none block w-full px-3 py-3 border border-[#c3c6d7] rounded-lg bg-white text-[#0b1c30] placeholder-[#737686] focus:outline-none focus:ring-2 focus:ring-[#004ac6] focus:border-[#004ac6] text-sm transition-all duration-150 input-glow pr-10"
-                    id="password"
-                    name="password"
-                    required
-                    type={showPassword ? 'text' : 'password'}
-                    value={password}
-                    onChange={(e) => { setPassword(e.target.value); calcStrength(e.target.value); if (error) setError('') }}
-                  />
-                  <button
-                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-[#737686] hover:text-[#004ac6] transition-colors"
-                    onClick={() => setShowPassword(!showPassword)}
-                    type="button"
-                  >
-                    <span className="material-symbols-outlined text-xl">{showPassword ? 'visibility_off' : 'visibility'}</span>
-                  </button>
-                </div>
-                {/* Strength Meter */}
-                <div className="mt-2 flex gap-1 h-1 w-full">
-                  {[1, 2, 3, 4].map((i) => (
-                    <div
-                      key={i}
-                      className={`flex-1 rounded-full transition-colors duration-300 ${password.length > 0 && i <= Math.max(1, strength) ? strengthColors[strength] : 'bg-[#dce9ff]'}`}
-                    />
-                  ))}
-                </div>
-                <p className={`mt-1 text-xs ${strength <= 1 ? 'text-[#ba1a1a]' : strength === 2 ? 'text-[#ffb95f]' : 'text-[#004ac6]'}`}>
-                  {strengthText}
-                </p>
-              </div>
-
-              {/* Confirm Password */}
-              <div>
-                <label className="block text-sm font-semibold text-[#434655] mb-1" htmlFor="confirm_password">Confirm Password</label>
-                <div className="mt-1 relative">
-                  <input
-                    autoComplete="new-password"
-                    className={`appearance-none block w-full px-3 py-3 border rounded-lg bg-white text-[#0b1c30] placeholder-[#737686] focus:outline-none focus:ring-2 text-sm transition-all duration-150 input-glow ${passwordMismatch ? 'border-[#ba1a1a] focus:ring-[#ba1a1a] focus:border-[#ba1a1a]' : 'border-[#c3c6d7] focus:ring-[#004ac6] focus:border-[#004ac6]'}`}
-                    id="confirm_password"
-                    name="confirm_password"
-                    required
-                    type="password"
-                    value={confirmPassword}
-                    onChange={(e) => { setConfirmPassword(e.target.value); if (error) setError('') }}
-                  />
-                </div>
-                {passwordMismatch && (
-                  <p className="mt-1 text-xs text-[#ba1a1a]">Passwords do not match.</p>
-                )}
-              </div>
-
-              {/* Terms */}
-              <div className="flex items-center">
-                <input
-                  className="h-4 w-4 text-[#004ac6] focus:ring-[#004ac6] border-[#c3c6d7] rounded bg-white transition-colors cursor-pointer"
-                  id="terms"
-                  name="terms"
-                  required
-                  type="checkbox"
-                />
-                <label className="ml-2 block text-sm text-[#434655]" htmlFor="terms">
-                  I agree to the{' '}
-                  <a className="text-[#004ac6] hover:text-[#2563eb] font-medium transition-colors" href="#">Terms</a>
-                  {' '}and{' '}
-                  <a className="text-[#004ac6] hover:text-[#2563eb] font-medium transition-colors" href="#">Privacy Policy</a>
-                </label>
-              </div>
-
-              {/* Submit */}
-              <div>
+        {/* Role selection */}
+        <div>
+          <p className="mb-2 text-sm font-medium text-ink-700">I want to...</p>
+          <div className="grid grid-cols-2 gap-3">
+            {roles.map((role) => {
+              const active = form.role === role.id
+              return (
                 <button
-                  className="w-full flex justify-center items-center gap-2 py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-semibold text-white bg-[#004ac6] hover:bg-[#2563eb] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#004ac6] transition-all duration-150 hover:scale-[1.02] hover:shadow-md active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed"
-                  type="submit"
-                  disabled={loading || !!passwordMismatch}
+                  type="button"
+                  key={role.id}
+                  onClick={() => setForm((f) => ({ ...f, role: role.id }))}
+                  className={`relative flex flex-col items-start gap-2.5 rounded-2xl border-2 p-4 text-left transition-all duration-200 ${
+                    active
+                      ? 'border-brand-500 bg-brand-50 shadow-soft'
+                      : 'border-border bg-white hover:border-brand-200'
+                  }`}
                 >
-                  {loading ? (
-                    <><div className="loader" /> Creating account…</>
-                  ) : (
-                    'Create Account'
+                  {active && (
+                    <span className="absolute right-3 top-3 flex h-5 w-5 items-center justify-center rounded-full bg-brand-600 text-white">
+                      <Check size={12} strokeWidth={3} />
+                    </span>
                   )}
+                  <span
+                    className={`flex h-10 w-10 items-center justify-center rounded-xl ${
+                      active ? 'bg-brand-600 text-white' : 'bg-surface-sunken text-ink-500'
+                    }`}
+                  >
+                    <role.icon size={18} />
+                  </span>
+                  <div>
+                    <p className="text-sm font-semibold text-ink-900">{role.title}</p>
+                    <p className="text-xs text-ink-400">{role.subtitle}</p>
+                  </div>
                 </button>
-              </div>
-            </form>
-
-            {/* Social Sign Up */}
-            <div className="mt-6">
-              <div className="relative">
-                <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-[#c3c6d7]/30" />
-                </div>
-                <div className="relative flex justify-center text-sm">
-                  <span className="px-2 bg-white text-sm text-[#434655]">Or continue with</span>
-                </div>
-              </div>
-              <div className="mt-4">
-                <GoogleSignInButton
-                  onSuccess={handleGoogleSuccess}
-                  onError={handleGoogleError}
-                  loading={googleLoading}
-                />
-              </div>
-            </div>
+              )
+            })}
           </div>
-
-          <p className="mt-12 text-center text-sm text-[#434655]">
-            Already have an account?{' '}
-            <Link className="text-sm font-semibold text-[#004ac6] hover:text-[#2563eb] transition-colors" to="/login">Login</Link>
-          </p>
+          {form.role === 'seller' && (
+            <div className="mt-3 flex items-start gap-2 rounded-xl border border-amber-500/25 bg-amber-500/5 px-3.5 py-3">
+              <Info size={15} className="mt-0.5 shrink-0 text-amber-500" />
+              <p className="text-xs leading-relaxed text-ink-600">
+                Seller accounts require admin approval before you can start selling.
+              </p>
+            </div>
+          )}
         </div>
+
+        <VHInput
+          label="Full Name"
+          icon={User}
+          placeholder="Jordan Lee"
+          value={form.fullName}
+          onChange={handleChange('fullName')}
+          error={errors.fullName}
+          autoComplete="name"
+        />
+
+        <VHInput
+          label="Email"
+          type="email"
+          icon={Mail}
+          placeholder="you@example.com"
+          value={form.email}
+          onChange={handleChange('email')}
+          error={errors.email}
+          autoComplete="email"
+        />
+
+        <div>
+          <VHPasswordInput
+            label="Password"
+            placeholder="Create a password"
+            value={form.password}
+            onChange={handleChange('password')}
+            error={errors.password}
+            autoComplete="new-password"
+          />
+          <PasswordStrengthIndicator password={form.password} />
+        </div>
+
+        <VHPasswordInput
+          label="Confirm Password"
+          placeholder="Re-enter your password"
+          value={form.confirmPassword}
+          onChange={handleChange('confirmPassword')}
+          error={errors.confirmPassword}
+          autoComplete="new-password"
+        />
+
+        <label className="flex cursor-pointer items-start gap-2.5">
+          <input
+            type="checkbox"
+            checked={form.agree}
+            onChange={handleChange('agree')}
+            className="mt-0.5 h-4.5 w-4.5 shrink-0 rounded border-border text-brand-600 focus:ring-brand-500/30"
+          />
+          <span className="text-sm text-ink-600">
+            I agree to the{' '}
+            <a href="#" className="font-medium text-brand-600 hover:text-brand-700">Terms</a> &amp;{' '}
+            <a href="#" className="font-medium text-brand-600 hover:text-brand-700">Privacy Policy</a>
+          </span>
+        </label>
+        {errors.agree && <p className="-mt-3 text-sm text-danger-500">{errors.agree}</p>}
+
+        <VHButton type="submit" variant="primary" size="lg" fullWidth loading={submitting}>
+          Create Account
+        </VHButton>
+      </form>
+
+      <div className="my-6 flex items-center gap-3">
+        <span className="h-px flex-1 bg-border" />
+        <span className="text-xs font-medium text-ink-400">OR</span>
+        <span className="h-px flex-1 bg-border" />
       </div>
-    </div>
+
+      <GoogleSignInButton
+        onSuccess={handleGoogleSuccess}
+        onError={handleGoogleError}
+        loading={googleLoading}
+      />
+
+      <p className="mt-7 text-center text-sm text-ink-500">
+        Already have an account?{' '}
+        <Link to="/login" className="font-semibold text-brand-600 hover:text-brand-700">
+          Sign In
+        </Link>
+      </p>
+    </AuthLayout>
   )
 }
