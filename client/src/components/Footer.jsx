@@ -48,13 +48,13 @@ export default function Footer() {
     <footer className="border-t border-border bg-surface-soft">
       <div className="container-page grid grid-cols-1 gap-10 py-14 sm:grid-cols-2 lg:grid-cols-5 lg:gap-8">
         <div className="lg:col-span-2">
-          <Link to="/" className="flex items-center gap-2">
-            <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-brand-500 to-brand-700 text-white">
+          <Link to="/" className="flex items-center gap-2.5">
+            <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary text-primary-content">
               <ShoppingBag size={18} strokeWidth={2.3} />
             </span>
-            <span className="font-display text-lg font-extrabold text-ink-900">VendorHub</span>
+            <span className="font-display text-lg font-bold text-text">Vendor<span className="text-primary">Hub</span></span>
           </Link>
-          <p className="mt-4 max-w-xs text-sm leading-relaxed text-ink-500">
+          <p className="mt-4 max-w-xs text-sm leading-relaxed text-text-muted">
             Connecting local businesses with modern shoppers.
           </p>
           <div className="mt-5 flex items-center gap-2">
@@ -63,7 +63,7 @@ export default function Footer() {
                 key={i}
                 href="#"
                 aria-label="Social link"
-                className="flex h-9 w-9 items-center justify-center rounded-full border border-border text-ink-500 transition-colors hover:border-brand-300 hover:bg-white hover:text-brand-600"
+                className="flex h-9 w-9 items-center justify-center rounded-full border border-border text-text-muted transition-colors hover:border-primary hover:bg-surface hover:text-primary"
               >
                 <Icon width={16} height={16} />
               </a>
@@ -73,11 +73,11 @@ export default function Footer() {
 
         {columns.map((col) => (
           <div key={col.title}>
-            <h4 className="font-display text-sm font-semibold text-ink-900">{col.title}</h4>
+            <h4 className="font-display text-sm font-semibold text-text">{col.title}</h4>
             <ul className="mt-4 space-y-2.5">
               {col.links.map((link) => (
                 <li key={link}>
-                  <a href="#" className="text-sm text-ink-500 transition-colors hover:text-brand-600">
+                  <a href="#" className="text-sm text-text-muted transition-colors hover:text-primary">
                     {link}
                   </a>
                 </li>
@@ -88,8 +88,8 @@ export default function Footer() {
       </div>
       <div className="border-t border-border">
         <div className="container-page flex flex-col items-center justify-between gap-3 py-6 sm:flex-row">
-          <p className="text-xs text-ink-400">© 2026 VendorHub. All rights reserved.</p>
-          <p className="text-xs text-ink-400">Made for local commerce, everywhere.</p>
+          <p className="text-xs text-text-muted">© 2026 VendorHub. All rights reserved.</p>
+          <p className="text-xs text-text-muted">Made for local commerce, everywhere.</p>
         </div>
       </div>
     </footer>

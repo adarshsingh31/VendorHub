@@ -112,14 +112,14 @@ export default function LoginPage() {
       heading="Welcome back to VendorHub"
       subheading="Shop smarter. Sell better. Grow locally."
     >
-      <h2 className="font-display text-[1.75rem] font-extrabold tracking-tight text-ink-900">
+      <h2 className="font-display text-[1.75rem] font-bold tracking-tight text-text">
         Welcome Back
       </h2>
-      <p className="mt-1.5 text-[15px] text-ink-500">Sign in to continue to VendorHub</p>
+      <p className="mt-1.5 text-[15px] text-text-muted">Sign in to continue to VendorHub</p>
 
       <form onSubmit={handleSubmit} className="mt-8 space-y-4" noValidate>
         {errors.form && (
-          <div className="rounded-xl border border-danger-500/20 bg-danger-50 px-4 py-3 text-sm text-danger-500">
+          <div className="rounded-xl border border-danger/20 bg-danger-bg px-4 py-3 text-sm text-danger-content">
             {errors.form}
           </div>
         )}
@@ -145,7 +145,7 @@ export default function LoginPage() {
             autoComplete="current-password"
           />
           <div className="mt-2 text-right">
-            <Link to="/forgot-password" className="text-sm font-medium text-brand-600 hover:text-brand-700">
+            <Link to="/forgot-password" className="text-sm font-semibold text-accent hover:text-accent-hover">
               Forgot Password?
             </Link>
           </div>
@@ -158,7 +158,7 @@ export default function LoginPage() {
 
       <div className="my-6 flex items-center gap-3">
         <span className="h-px flex-1 bg-border" />
-        <span className="text-xs font-medium text-ink-400">OR</span>
+        <span className="text-xs font-medium text-text-muted">OR</span>
         <span className="h-px flex-1 bg-border" />
       </div>
 
@@ -168,9 +168,9 @@ export default function LoginPage() {
         loading={googleLoading}
       />
 
-      <p className="mt-7 text-center text-sm text-ink-500">
+      <p className="mt-7 text-center text-sm text-text-muted">
         Don&apos;t have an account?{' '}
-        <Link to="/signup" className="font-semibold text-brand-600 hover:text-brand-700">
+        <Link to="/signup" className="font-semibold text-primary hover:text-primary-hover">
           Sign Up
         </Link>
       </p>

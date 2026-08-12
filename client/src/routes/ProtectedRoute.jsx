@@ -1,5 +1,6 @@
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import DashboardLayout from '../components/layout/DashboardLayout';
 
 /**
  * ProtectedRoute — guards role-specific routes.
@@ -11,7 +12,7 @@ import { useAuth } from '../context/AuthContext';
  * Behaviour:
  *   1. Not authenticated → redirect to /login
  *   2. Authenticated but wrong role → redirect to the user's own dashboard
- *   3. Correct role → render children
+ *   3. Correct role → render children inside DashboardLayout
  */
 export default function ProtectedRoute({ allowedRole, children }) {
   const { isAuthenticated, role } = useAuth();
@@ -27,5 +28,9 @@ export default function ProtectedRoute({ allowedRole, children }) {
     return <Navigate to={dashboardMap[role] || '/login'} replace />;
   }
 
-  return children;
+  return (
+    <DashboardLayout>
+      {children}
+    </DashboardLayout>
+  );
 }

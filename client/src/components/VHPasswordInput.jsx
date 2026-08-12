@@ -10,25 +10,25 @@ const VHPasswordInput = forwardRef(function VHPasswordInput(
   const inputId = id || autoId
 
   const stateRing = error
-    ? 'border-danger-500/60 focus:border-danger-500 focus:ring-danger-500/15'
-    : 'border-border focus:border-brand-500 focus:ring-brand-500/15'
+    ? 'border-danger/60 focus:border-danger focus:ring-danger/15'
+    : 'border-border focus:border-primary focus:ring-primary/15'
 
   return (
     <div className="w-full">
       {label && (
-        <label htmlFor={inputId} className="mb-1.5 block text-sm font-medium text-ink-700">
+        <label htmlFor={inputId} className="mb-1.5 block text-[13px] font-semibold text-text">
           {label}
         </label>
       )}
       <div className="relative">
         {showIcon && (
-          <Lock size={17} className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-ink-400" />
+          <Lock size={17} className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-text-muted" />
         )}
         <input
           ref={ref}
           id={inputId}
           type={visible ? 'text' : 'password'}
-          className={`h-12 w-full rounded-xl border bg-white pr-11 text-[15px] text-ink-900 placeholder:text-ink-400 outline-none transition-colors duration-150 focus:ring-4 ${stateRing} ${showIcon ? 'pl-11' : 'pl-4'} ${className}`}
+          className={`h-11 w-full rounded-lg border bg-surface pr-11 text-[13.5px] text-text placeholder:text-text-muted outline-none transition-colors duration-150 focus:ring-4 ${stateRing} ${showIcon ? 'pl-10' : 'pl-4'} ${className}`}
           aria-invalid={!!error}
           aria-describedby={error ? `${inputId}-error` : hint ? `${inputId}-hint` : undefined}
           {...props}
@@ -37,17 +37,17 @@ const VHPasswordInput = forwardRef(function VHPasswordInput(
           type="button"
           onClick={() => setVisible((v) => !v)}
           aria-label={visible ? 'Hide password' : 'Show password'}
-          className="absolute right-3.5 top-1/2 -translate-y-1/2 text-ink-400 transition-colors hover:text-ink-700"
+          className="absolute right-3.5 top-1/2 -translate-y-1/2 text-text-muted transition-colors hover:text-text"
         >
           {visible ? <EyeOff size={18} /> : <Eye size={18} />}
         </button>
       </div>
       {error ? (
-        <p id={`${inputId}-error`} className="mt-1.5 flex items-center gap-1 text-sm text-danger-500">
+        <p id={`${inputId}-error`} className="mt-1.5 flex items-center gap-1 text-xs font-semibold text-danger">
           <AlertCircle size={14} /> {error}
         </p>
       ) : hint ? (
-        <p id={`${inputId}-hint`} className="mt-1.5 text-sm text-ink-400">
+        <p id={`${inputId}-hint`} className="mt-1.5 text-xs text-text-muted">
           {hint}
         </p>
       ) : null}

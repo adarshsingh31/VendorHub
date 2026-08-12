@@ -154,21 +154,21 @@ export default function SignUpPage() {
       heading="Join your local marketplace today"
       subheading="Create an account to start shopping local sellers or launch your own store."
     >
-      <h2 className="font-display text-[1.75rem] font-extrabold tracking-tight text-ink-900">
+      <h2 className="font-display text-[1.75rem] font-bold tracking-tight text-text">
         Create your VendorHub account
       </h2>
-      <p className="mt-1.5 text-[15px] text-ink-500">Join your local marketplace today.</p>
+      <p className="mt-1.5 text-[15px] text-text-muted">Join your local marketplace today.</p>
 
       <form onSubmit={handleSubmit} className="mt-7 space-y-5" noValidate>
         {errors.form && (
-          <div className="rounded-xl border border-danger-500/20 bg-danger-50 px-4 py-3 text-sm text-danger-500">
+          <div className="rounded-xl border border-danger/20 bg-danger-bg px-4 py-3 text-sm text-danger-content">
             {errors.form}
           </div>
         )}
 
         {/* Role selection */}
         <div>
-          <p className="mb-2 text-sm font-medium text-ink-700">I want to...</p>
+          <p className="mb-2 text-[13px] font-semibold text-text">I want to...</p>
           <div className="grid grid-cols-2 gap-3">
             {roles.map((role) => {
               const active = form.role === role.id
@@ -177,27 +177,27 @@ export default function SignUpPage() {
                   type="button"
                   key={role.id}
                   onClick={() => setForm((f) => ({ ...f, role: role.id }))}
-                  className={`relative flex flex-col items-start gap-2.5 rounded-2xl border-2 p-4 text-left transition-all duration-200 ${
+                  className={`relative flex flex-col items-start gap-2.5 rounded-xl border-2 p-4 text-left transition-all duration-200 ${
                     active
-                      ? 'border-brand-500 bg-brand-50 shadow-soft'
-                      : 'border-border bg-white hover:border-brand-200'
+                      ? 'border-primary bg-primary/5 shadow-soft'
+                      : 'border-border bg-surface hover:border-primary/30'
                   }`}
                 >
                   {active && (
-                    <span className="absolute right-3 top-3 flex h-5 w-5 items-center justify-center rounded-full bg-brand-600 text-white">
+                    <span className="absolute right-3 top-3 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-primary-content">
                       <Check size={12} strokeWidth={3} />
                     </span>
                   )}
                   <span
                     className={`flex h-10 w-10 items-center justify-center rounded-xl ${
-                      active ? 'bg-brand-600 text-white' : 'bg-surface-sunken text-ink-500'
+                      active ? 'bg-primary text-primary-content' : 'bg-surface-sunken text-text-muted'
                     }`}
                   >
                     <role.icon size={18} />
                   </span>
                   <div>
-                    <p className="text-sm font-semibold text-ink-900">{role.title}</p>
-                    <p className="text-xs text-ink-400">{role.subtitle}</p>
+                    <p className="text-sm font-semibold text-text">{role.title}</p>
+                    <p className="text-xs text-text-muted">{role.subtitle}</p>
                   </div>
                 </button>
               )
@@ -260,15 +260,15 @@ export default function SignUpPage() {
             type="checkbox"
             checked={form.agree}
             onChange={handleChange('agree')}
-            className="mt-0.5 h-4.5 w-4.5 shrink-0 rounded border-border text-brand-600 focus:ring-brand-500/30"
+            className="mt-0.5 h-4 w-4 shrink-0 rounded border-border text-primary focus:ring-primary/30"
           />
-          <span className="text-sm text-ink-600">
+          <span className="text-sm text-text-soft">
             I agree to the{' '}
-            <a href="#" className="font-medium text-brand-600 hover:text-brand-700">Terms</a> &amp;{' '}
-            <a href="#" className="font-medium text-brand-600 hover:text-brand-700">Privacy Policy</a>
+            <a href="#" className="font-semibold text-primary hover:text-primary-hover">Terms</a> &amp;{' '}
+            <a href="#" className="font-semibold text-primary hover:text-primary-hover">Privacy Policy</a>
           </span>
         </label>
-        {errors.agree && <p className="-mt-3 text-sm text-danger-500">{errors.agree}</p>}
+        {errors.agree && <p className="-mt-3 text-xs font-semibold text-danger">{errors.agree}</p>}
 
         <VHButton type="submit" variant="primary" size="lg" fullWidth loading={submitting}>
           Create Account
@@ -277,7 +277,7 @@ export default function SignUpPage() {
 
       <div className="my-6 flex items-center gap-3">
         <span className="h-px flex-1 bg-border" />
-        <span className="text-xs font-medium text-ink-400">OR</span>
+        <span className="text-xs font-medium text-text-muted">OR</span>
         <span className="h-px flex-1 bg-border" />
       </div>
 
@@ -287,9 +287,9 @@ export default function SignUpPage() {
         loading={googleLoading}
       />
 
-      <p className="mt-7 text-center text-sm text-ink-500">
+      <p className="mt-7 text-center text-sm text-text-muted">
         Already have an account?{' '}
-        <Link to="/login" className="font-semibold text-brand-600 hover:text-brand-700">
+        <Link to="/login" className="font-semibold text-primary hover:text-primary-hover">
           Sign In
         </Link>
       </p>

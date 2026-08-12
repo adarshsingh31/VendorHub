@@ -38,13 +38,13 @@ export default function ForgotPasswordPage() {
         subheading="No worries. We'll help you get back into your account in a couple of minutes."
       >
         <div className="text-center">
-          <span className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-local-50 text-local-600">
+          <span className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-accent/10 text-accent">
             <MailCheck size={28} />
           </span>
-          <h2 className="mt-5 font-display text-2xl font-extrabold tracking-tight text-ink-900">
+          <h2 className="mt-5 font-display text-2xl font-bold tracking-tight text-text">
             Check your inbox
           </h2>
-          <p className="mt-2 text-[15px] leading-relaxed text-ink-500">
+          <p className="mt-2 text-[15px] leading-relaxed text-text-muted">
             If an account exists with this email, we&apos;ve sent instructions to reset your password.
           </p>
           <Link to="/login" className="mt-8 block">
@@ -62,10 +62,10 @@ export default function ForgotPasswordPage() {
       heading="Forgot your password?"
       subheading="No worries. We'll help you get back into your account in a couple of minutes."
     >
-      <h2 className="font-display text-[1.75rem] font-extrabold tracking-tight text-ink-900">
+      <h2 className="font-display text-[1.75rem] font-bold tracking-tight text-text">
         Forgot your password?
       </h2>
-      <p className="mt-1.5 text-[15px] leading-relaxed text-ink-500">
+      <p className="mt-1.5 text-[15px] leading-relaxed text-text-muted">
         No worries. Enter your email and we&apos;ll send you a secure password reset link.
       </p>
 
@@ -91,7 +91,7 @@ export default function ForgotPasswordPage() {
 
       <Link
         to="/login"
-        className="mt-7 flex items-center justify-center gap-1.5 text-sm font-semibold text-brand-600 hover:text-brand-700"
+        className="mt-7 flex items-center justify-center gap-1.5 text-sm font-semibold text-primary hover:text-primary-hover"
       >
         <ArrowLeft size={15} /> Back to Sign In
       </Link>

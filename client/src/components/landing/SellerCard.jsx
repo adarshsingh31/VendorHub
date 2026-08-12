@@ -10,22 +10,22 @@ export default function SellerCard({ name, category, rating, distance, delivery,
       </span>
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-1.5">
-          <p className="truncate font-display text-[15px] font-semibold text-ink-900">{name}</p>
+          <p className="truncate font-display text-[15px] font-semibold text-text">{name}</p>
           {verified && (
-            <span title="Verified seller">
-              <BadgeCheck size={16} className="shrink-0 text-brand-500" />
+            <span className="flex items-center" title="Verified Seller">
+              <BadgeCheck size={16} className="shrink-0 text-primary" />
             </span>
           )}
         </div>
-        <p className="text-sm text-ink-400">{category}</p>
-        <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs font-medium text-ink-500">
+        <p className="text-sm text-text-muted">{category}</p>
+        <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs font-medium text-text-soft">
           <span className="flex items-center gap-1 text-amber-500">
             <Star size={13} fill="currentColor" strokeWidth={0} /> {rating}
           </span>
           <span className="flex items-center gap-1">
             <MapPin size={13} /> {distance}
           </span>
-          <span className="flex items-center gap-1 text-local-600">
+          <span className="flex items-center gap-1 text-accent">
             <Truck size={13} /> {delivery}
           </span>
         </div>

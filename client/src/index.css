@@ -1,60 +1,84 @@
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap');
 @import "tailwindcss";
 
 @theme {
-  /* ---- Color tokens ---- */
-  --color-brand-50: #eef1ff;
-  --color-brand-100: #e0e5ff;
-  --color-brand-200: #c4cbff;
-  --color-brand-300: #9ea6ff;
-  --color-brand-400: #7a7ffa;
-  --color-brand-500: #5b5cf0;
-  --color-brand-600: #4640dd;
-  --color-brand-700: #3931b8;
-  --color-brand-800: #2f2a93;
-  --color-brand-900: #292774;
-
-  --color-ink-900: #0e1224;
-  --color-ink-700: #33374e;
-  --color-ink-500: #62667e;
-  --color-ink-400: #8286a0;
-  --color-ink-300: #b0b3c6;
-
-  --color-surface: #ffffff;
-  --color-surface-soft: #f6f7fc;
+  /* ---- Unified Design Tokens ---- */
+  --color-primary: #F2A93B; /* Marigold */
+  --color-primary-hover: #B9791C;
+  --color-primary-content: #4A2E05;
+  
+  --color-accent: #0E7C7B; /* Teal */
+  --color-accent-hover: #095857;
+  
+  --color-background: #F6F5F0; /* Paper */
+  --color-surface: #FFFFFF; /* Card */
+  --color-surface-soft: rgba(27,35,64,0.04);
   --color-surface-sunken: #eef0f9;
-  --color-border: #e5e7f2;
-
-  --color-local-500: #0fa36f;
-  --color-local-600: #0b8a5c;
-  --color-local-400: #11c082;
-  --color-local-50: #e8f9f1;
-  --color-local-300: #6ddab4;
-
-  --color-amber-500: #f5a524;
-  --color-amber-400: #f7b84b;
-
-  --color-ai-500: #8557f5;
-  --color-ai-600: #6f3fe0;
-  --color-ai-400: #9b73f8;
-  --color-ai-50: #f2edff;
-
-  --color-danger-500: #e6493f;
-  --color-danger-50: #fdeceb;
-
+  
+  --color-text: #1B2340; /* Ink */
+  --color-text-soft: #3A4066; /* Ink Soft */
+  --color-text-muted: #767A82; /* Muted */
+  
+  /* Ink alias for dark background use */
+  --color-ink: #1B2340;
+  
+  --color-border: #E4E1D6; /* Line */
+  
+  --color-success: #0E7C7B;
+  --color-warning: #F2A93B;
+  --color-danger: #E4572E; /* Coral */
+  --color-danger-bg: #FCEAE3;
+  --color-danger-content: #7A2A11;
+  
+  /* ---- Legacy aliases (brand-* = primary, ink-* = text, local-* = accent) ---- */
+  --color-brand-50: #FEF8EC;
+  --color-brand-100: #FDF0D5;
+  --color-brand-200: #FAE0A9;
+  --color-brand-300: #F7CB6F;
+  --color-brand-400: #F4B54A;
+  --color-brand-500: #F2A93B;
+  --color-brand-600: #B9791C;
+  --color-brand-700: #8C5610;
+  --color-brand-800: #6B3E0A;
+  --color-brand-900: #4A2E05;
+  
+  --color-ink-400: #767A82;
+  --color-ink-500: #767A82;
+  --color-ink-600: #3A4066;
+  --color-ink-700: #3A4066;
+  --color-ink-900: #1B2340;
+  
+  --color-local-50: #E6F2F1;
+  --color-local-100: #C5E4E2;
+  --color-local-400: #0E7C7B;
+  --color-local-500: #0E7C7B;
+  --color-local-600: #095857;
+  
+  --color-ai-50: #EDE9FB;
+  --color-ai-400: #7C3AED;
+  --color-ai-500: #7C3AED;
+  --color-ai-600: #6D28D9;
+  
+  --color-danger-50: #FCEAE3;
+  --color-danger-500: #E4572E;
+  
   /* ---- Type tokens ---- */
-  --font-display: "Plus Jakarta Sans", "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Fraunces", serif;
   --font-body: "Inter", ui-sans-serif, system-ui, sans-serif;
-
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  
   /* ---- Radius tokens ---- */
-  --radius-xl: 1rem;
+  --radius-md: 8px;
+  --radius-lg: 10px;
+  --radius-xl: 12px;
   --radius-2xl: 1.25rem;
   --radius-3xl: 1.75rem;
 
   /* ---- Shadow tokens ---- */
-  --shadow-soft: 0 1px 2px rgba(14,18,36,0.04), 0 8px 24px -8px rgba(14,18,36,0.10);
-  --shadow-soft-lg: 0 4px 8px rgba(14,18,36,0.04), 0 24px 48px -16px rgba(14,18,36,0.16);
-  --shadow-brand: 0 12px 24px -10px rgba(70,64,221,0.45);
+  --shadow-soft: 0 1px 2px rgba(27,35,64,0.04), 0 8px 24px -8px rgba(27,35,64,0.10);
+  --shadow-soft-lg: 0 4px 8px rgba(27,35,64,0.04), 0 24px 48px -16px rgba(27,35,64,0.16);
+  --shadow-brand: 0 12px 24px -10px rgba(242,169,59,0.45);
 
   --animate-fade-up: fade-up 0.6s ease forwards;
   --animate-float: float 5s ease-in-out infinite;
@@ -85,20 +109,21 @@
   }
   body {
     font-family: var(--font-body);
-    color: var(--color-ink-900);
-    background-color: var(--color-surface);
+    color: var(--color-text);
+    background-color: var(--color-background);
     -webkit-font-smoothing: antialiased;
+    margin: 0;
   }
   h1, h2, h3, h4 {
     font-family: var(--font-display);
     letter-spacing: -0.02em;
   }
   ::selection {
-    background-color: var(--color-brand-200);
-    color: var(--color-ink-900);
+    background-color: var(--color-primary);
+    color: var(--color-primary-content);
   }
   :focus-visible {
-    outline: 2px solid var(--color-brand-500);
+    outline: 2px solid var(--color-primary);
     outline-offset: 2px;
     border-radius: 4px;
   }
@@ -116,12 +141,11 @@
     .container-page { padding-left: 2rem; padding-right: 2rem; }
   }
   .text-gradient-brand {
-    background-image: linear-gradient(95deg, var(--color-brand-600), var(--color-brand-400));
+    background-image: linear-gradient(95deg, var(--color-primary-hover), var(--color-primary));
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
   }
-  /* Legacy utilities kept for backward compatibility with existing dashboards */
   .glass-panel {
     background: rgba(255, 255, 255, 0.7);
     backdrop-filter: blur(12px);
@@ -135,7 +159,7 @@
     box-shadow: 0 10px 15px -3px rgba(0,0,0,0.08), 0 4px 6px -4px rgba(0,0,0,0.08);
   }
   .input-glow:focus {
-    box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
+    box-shadow: 0 0 0 4px rgba(242, 169, 59, 0.15);
   }
   .input-transition {
     transition: all 0.2s ease-in-out;
@@ -151,6 +175,32 @@
     width: 20px;
     height: 20px;
     animation: spin 1s linear infinite;
+  }
+  /* Hide scrollbar but keep scroll behavior */
+  .no-scrollbar {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  /* Material Symbols */
+  .material-symbols-outlined {
+    font-family: 'Material Symbols Outlined';
+    font-weight: normal;
+    font-style: normal;
+    font-size: 24px;
+    line-height: 1;
+    letter-spacing: normal;
+    text-transform: none;
+    display: inline-block;
+    white-space: nowrap;
+    word-wrap: normal;
+    direction: ltr;
+    -webkit-font-feature-settings: 'liga';
+    font-feature-settings: 'liga';
+    -webkit-font-smoothing: antialiased;
+    font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
   }
 }
 

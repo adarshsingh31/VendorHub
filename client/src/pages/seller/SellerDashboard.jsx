@@ -1,247 +1,182 @@
-import { useAuth } from '../../context/AuthContext';
-import Sidebar from '../../components/common/Sidebar';
-import StatCard from '../../components/common/StatCard';
-import SalesChart from '../../components/seller/SalesChart';
-import {
-  sellerStats,
-  sellerEarnings,
-  sellerRecentOrders,
-  sellerTopProducts,
-} from '../../data/mockData';
+import React from 'react';
 
 export default function SellerDashboard() {
-  const { user } = useAuth();
-  const userName = user?.name || 'Seller';
-  const userInitial = userName.charAt(0).toUpperCase();
-
   return (
-    <div className="min-h-screen bg-[#F4F1EA] font-[Manrope,sans-serif] text-on-surface flex">
-      {/* Sidebar */}
-      <Sidebar role="seller" userName={userName} userInitial={userInitial} />
-
-      {/* Main Content */}
-      <main className="flex-1 md:ml-64 overflow-y-auto">
-        {/* Top Bar — desktop only */}
-        <header className="bg-surface border-b border-outline-variant hidden md:flex justify-between items-center w-full px-6 py-4 sticky top-0 z-40">
-          <div className="flex items-center gap-4">
-            <div>
-              <h1 className="text-xl font-extrabold text-primary">Seller Dashboard</h1>
-              <p className="text-sm text-on-surface-variant">
-                Welcome back, <span className="text-primary font-bold">{userName}</span> 👋
-              </p>
-            </div>
-          </div>
-          <div className="flex items-center gap-6">
-            <div className="flex gap-4 text-primary">
-              <button className="material-symbols-outlined hover:text-primary-container transition-colors relative">
-                notifications
-                <span className="absolute top-0 right-0 w-2 h-2 bg-error rounded-full" />
-              </button>
-              <button className="material-symbols-outlined hover:text-primary-container transition-colors">help</button>
-            </div>
-            <div className="flex items-center gap-3 border-l border-outline-variant pl-6">
-              <div className="w-10 h-10 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center font-bold">
-                {userInitial}
-              </div>
-              <div>
-                <p className="text-sm font-semibold text-on-surface">{userName}</p>
-                <p className="text-xs text-on-surface-variant flex items-center">
-                  Seller <span className="material-symbols-outlined text-[16px] ml-1">expand_more</span>
-                </p>
-              </div>
-            </div>
-          </div>
-        </header>
-
-        <div className="p-4 md:p-6 pb-24 md:pb-6 space-y-6">
-          {/* Mobile Header */}
-          <div className="md:hidden flex justify-between items-center">
-            <h1 className="text-xl font-bold text-primary">Seller Dashboard</h1>
-            <div className="w-10 h-10 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center font-bold">
-              {userInitial}
-            </div>
-          </div>
-
-          {/* ── KPI Cards ─────────────────────────────────────────── */}
-          <section className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
-            <div className="bg-white rounded-xl p-4 shadow-sm border border-surface-variant flex items-center gap-3">
-              <div className="w-12 h-12 rounded-full bg-primary/10 text-primary flex items-center justify-center shrink-0">
-                <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>shopping_bag</span>
-              </div>
-              <div>
-                <p className="text-xs text-on-surface-variant mb-0.5">Total Sales</p>
-                <h3 className="text-base font-bold text-on-surface">{sellerStats.totalSales}</h3>
-                <p className="text-xs text-primary mt-0.5 flex items-center">
-                  <span className="material-symbols-outlined text-[13px]">arrow_upward</span> 18.6%
-                </p>
-              </div>
-            </div>
-            <div className="bg-white rounded-xl p-4 shadow-sm border border-surface-variant flex items-center gap-3">
-              <div className="w-12 h-12 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center shrink-0">
-                <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>inventory_2</span>
-              </div>
-              <div>
-                <p className="text-xs text-on-surface-variant mb-0.5">Total Orders</p>
-                <h3 className="text-base font-bold text-on-surface">{sellerStats.totalOrders}</h3>
-                <p className="text-xs text-primary mt-0.5 flex items-center">
-                  <span className="material-symbols-outlined text-[13px]">arrow_upward</span> 12.4%
-                </p>
-              </div>
-            </div>
-            <div className="bg-white rounded-xl p-4 shadow-sm border border-surface-variant flex items-center gap-3">
-              <div className="w-12 h-12 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center shrink-0">
-                <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>deployed_code</span>
-              </div>
-              <div>
-                <p className="text-xs text-on-surface-variant mb-0.5">Total Products</p>
-                <h3 className="text-base font-bold text-on-surface">{sellerStats.totalProducts}</h3>
-                <p className="text-xs text-primary mt-0.5 flex items-center">
-                  <span className="material-symbols-outlined text-[13px]">arrow_upward</span> 5 new
-                </p>
-              </div>
-            </div>
-            <div className="bg-white rounded-xl p-4 shadow-sm border border-surface-variant flex items-center gap-3">
-              <div className="w-12 h-12 rounded-full bg-orange-100 text-orange-600 flex items-center justify-center shrink-0">
-                <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>visibility</span>
-              </div>
-              <div>
-                <p className="text-xs text-on-surface-variant mb-0.5">Store Views</p>
-                <h3 className="text-base font-bold text-on-surface">{sellerStats.storeViews}</h3>
-                <p className="text-xs text-primary mt-0.5 flex items-center">
-                  <span className="material-symbols-outlined text-[13px]">arrow_upward</span> 20.3%
-                </p>
-              </div>
-            </div>
-            <div className="bg-white rounded-xl p-4 shadow-sm border border-surface-variant flex items-center gap-3 col-span-2 md:col-span-1">
-              <div className="w-12 h-12 rounded-full bg-red-100 text-red-500 flex items-center justify-center shrink-0">
-                <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>star</span>
-              </div>
-              <div>
-                <p className="text-xs text-on-surface-variant mb-0.5">Store Rating</p>
-                <h3 className="text-base font-bold text-on-surface flex items-center gap-1">
-                  {sellerStats.storeRating}
-                  <span className="material-symbols-outlined text-secondary text-[18px]" style={{ fontVariationSettings: "'FILL' 1" }}>star</span>
-                </h3>
-                <p className="text-xs text-outline mt-0.5">({sellerStats.reviewCount} reviews)</p>
-              </div>
-            </div>
-          </section>
-
-          {/* ── Main Dashboard Grid ────────────────────────────────── */}
-          <section className="grid grid-cols-1 lg:grid-cols-12 gap-4">
-            {/* Left — Chart + Earnings */}
-            <div className="lg:col-span-8 flex flex-col gap-4">
-              {/* Sales Overview */}
-              <div className="bg-white rounded-xl p-5 shadow-sm border border-surface-variant flex flex-col">
-                <div className="flex justify-between items-center mb-4">
-                  <h3 className="text-sm font-bold text-on-surface">Sales Overview</h3>
-                  <div className="border border-outline-variant rounded px-3 py-1 text-xs text-on-surface-variant flex items-center cursor-pointer">
-                    This Month <span className="material-symbols-outlined text-[14px] ml-1">expand_more</span>
-                  </div>
-                </div>
-                <SalesChart />
-              </div>
-
-              {/* Earnings Overview */}
-              <div className="bg-white rounded-xl p-5 shadow-sm border border-surface-variant flex justify-between items-center flex-wrap gap-4">
-                <div>
-                  <h3 className="text-sm font-bold text-on-surface mb-4">Earnings Overview</h3>
-                  <div className="flex gap-6">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
-                        <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>account_balance_wallet</span>
-                      </div>
-                      <div>
-                        <p className="text-xs text-outline">Available Balance</p>
-                        <p className="text-base font-bold text-on-surface">{sellerEarnings.availableBalance}</p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-lg bg-secondary/10 text-secondary flex items-center justify-center">
-                        <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>hourglass_top</span>
-                      </div>
-                      <div>
-                        <p className="text-xs text-outline">Pending Balance</p>
-                        <p className="text-base font-bold text-on-surface">{sellerEarnings.pendingBalance}</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <button className="bg-primary text-on-primary font-bold text-sm py-2 px-5 rounded-lg flex items-center gap-2 hover:opacity-90 transition-opacity shadow-sm">
-                  Withdraw Earnings <span className="material-symbols-outlined text-[18px]">chevron_right</span>
-                </button>
-              </div>
-            </div>
-
-            {/* Right Column */}
-            <div className="lg:col-span-4 flex flex-col gap-4">
-              {/* Recent Orders */}
-              <div className="bg-white rounded-xl p-4 shadow-sm border border-surface-variant">
-                <div className="flex justify-between items-center mb-4">
-                  <h3 className="text-sm font-bold text-on-surface">Recent Orders</h3>
-                  <a href="/seller/orders" className="text-xs text-primary hover:underline">View All</a>
-                </div>
-                <div className="space-y-4">
-                  {sellerRecentOrders.map((order) => (
-                    <div key={order.id} className="flex items-center justify-between pb-3 border-b border-surface-variant">
-                      <div className="flex items-center gap-3">
-                        <img
-                          src={order.img}
-                          alt={order.id}
-                          className="w-10 h-10 rounded bg-surface-variant object-cover"
-                        />
-                        <div>
-                          <p className="text-sm font-semibold text-on-surface">{order.id}</p>
-                          <p className="text-xs text-outline">{order.buyer} • {order.items} {order.items === 1 ? 'Item' : 'Items'}</p>
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        <p className="text-xs text-outline mb-1">{order.date}</p>
-                        <span className={`inline-block px-2 py-0.5 text-[10px] font-bold rounded ${order.statusColor}`}>
-                          {order.status}
-                        </span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Top Selling Products */}
-              <div className="bg-white rounded-xl p-4 shadow-sm border border-surface-variant">
-                <div className="flex justify-between items-center mb-4">
-                  <h3 className="text-sm font-bold text-on-surface">Top Selling Products</h3>
-                  <a href="/seller/products" className="text-xs text-primary hover:underline">View All</a>
-                </div>
-                <div className="space-y-4">
-                  {sellerTopProducts.map((product) => (
-                    <div key={product.name} className="flex items-center justify-between pb-3 border-b border-surface-variant">
-                      <div className="flex items-center gap-3 w-1/2">
-                        <img
-                          src={product.img}
-                          alt={product.name}
-                          className="w-8 h-8 rounded bg-surface-variant object-cover"
-                        />
-                        <div>
-                          <p className="text-xs font-semibold text-on-surface truncate">{product.name}</p>
-                          <p className="text-[10px] text-outline">{product.sold} Sold</p>
-                        </div>
-                      </div>
-                      <div className="w-1/4 px-2">
-                        <div className="w-full bg-surface-variant h-1.5 rounded-full overflow-hidden">
-                          <div className="bg-primary h-full" style={{ width: `${product.soldPercent}%` }} />
-                        </div>
-                      </div>
-                      <div className="w-1/4 text-right">
-                        <p className="text-xs font-bold text-on-surface">{product.price}</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </section>
+    <div className="pb-10">
+      <div className="flex justify-between items-end mb-6 flex-wrap gap-3">
+        <div>
+          <p className="text-[11px] tracking-[0.14em] uppercase text-text-muted font-semibold">Wednesday, 13 August</p>
+          <h1 className="font-display text-[26px] font-semibold my-1 text-text">Welcome back, Hill Loom Textiles</h1>
+          <p className="m-0 text-text-muted text-[13.5px]">3 orders need packing today, and 2 products are almost out of stock.</p>
         </div>
-      </main>
+        <div className="flex gap-2.5">
+          <button className="bg-surface text-text-soft border border-border font-semibold text-[13px] px-4 py-2.5 rounded-lg hover-lift">View storefront</button>
+          <button className="bg-primary text-primary-content border-none font-bold text-[13px] px-4 py-2.5 rounded-lg hover-lift flex items-center gap-1.5">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Add product
+          </button>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3.5 mb-6">
+        <div className="bg-surface border border-border rounded-xl p-4">
+          <div className="flex justify-between items-start">
+            <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-[#FBEFDA]">
+              <svg stroke="#B9791C" viewBox="0 0 24 24" className="w-4 h-4 stroke-[2.2px] fill-none"><path d="M20 6L9 17l-5-5"/></svg>
+            </div>
+            <span className="text-[11.5px] font-bold px-2 py-0.5 rounded-[5px] bg-[#E6F2E9] text-[#1E7A3E]">+12%</span>
+          </div>
+          <div className="font-display text-[26px] font-semibold mt-3 mb-0.5 text-text">₹48,260</div>
+          <div className="text-[12.5px] text-text-muted">Revenue this month</div>
+        </div>
+        
+        <div className="bg-surface border border-border rounded-xl p-4">
+          <div className="flex justify-between items-start">
+            <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-[#E1EFEE]">
+              <svg stroke="#095857" viewBox="0 0 24 24" className="w-4 h-4 stroke-[2.2px] fill-none"><path d="M3 7l9-4 9 4-9 4-9-4z"/><path d="M3 7v10l9 4 9-4V7"/></svg>
+            </div>
+            <span className="text-[11.5px] font-bold px-2 py-0.5 rounded-[5px] bg-[#E6F2E9] text-[#1E7A3E]">+5%</span>
+          </div>
+          <div className="font-display text-[26px] font-semibold mt-3 mb-0.5 text-text">186</div>
+          <div className="text-[12.5px] text-text-muted">Orders this month</div>
+        </div>
+
+        <div className="bg-surface border border-border rounded-xl p-4">
+          <div className="flex justify-between items-start">
+            <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-danger-bg">
+              <svg stroke="#7A2A11" viewBox="0 0 24 24" className="w-4 h-4 stroke-[2.2px] fill-none"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>
+            </div>
+            <span className="text-[11.5px] font-bold px-2 py-0.5 rounded-[5px] bg-danger-bg text-danger-content">3 due</span>
+          </div>
+          <div className="font-display text-[26px] font-semibold mt-3 mb-0.5 text-text">7</div>
+          <div className="text-[12.5px] text-text-muted">Awaiting shipment</div>
+        </div>
+
+        <div className="bg-surface border border-border rounded-xl p-4">
+          <div className="flex justify-between items-start">
+            <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-[#E6F2E9]">
+              <svg stroke="#1E7A3E" viewBox="0 0 24 24" className="w-4 h-4 stroke-[2.2px] fill-none"><path d="M12 17.3l-6.2 3.6 1.6-7-5.4-4.7 7.1-.6L12 2l2.9 6.6 7.1.6-5.4 4.7 1.6 7z"/></svg>
+            </div>
+            <span className="text-[11.5px] font-bold px-2 py-0.5 rounded-[5px] bg-[#E6F2E9] text-[#1E7A3E]">4.7</span>
+          </div>
+          <div className="font-display text-[26px] font-semibold mt-3 mb-0.5 text-text">312</div>
+          <div className="text-[12.5px] text-text-muted">Total reviews</div>
+        </div>
+      </div>
+
+      <div className="grid lg:grid-cols-[1.6fr_1fr] gap-4 items-start">
+        <div className="flex flex-col gap-4">
+          <div className="bg-surface border border-border rounded-xl p-5">
+            <div className="flex justify-between items-center mb-3.5">
+              <h3 className="font-display text-[17px] font-semibold m-0 text-text">Sales, last 7 days</h3>
+              <a href="#" className="text-[12.5px] font-bold text-accent-hover hover:underline">Full report →</a>
+            </div>
+            <div className="flex items-end gap-2.5 h-[150px] pt-2.5">
+              <div className="flex-1 flex flex-col items-center gap-1.5"><div className="w-full rounded-t-[5px] bg-[#EFE3C9]" style={{height:'58px'}}></div><span className="text-[11px] text-text-muted font-semibold">Thu</span></div>
+              <div className="flex-1 flex flex-col items-center gap-1.5"><div className="w-full rounded-t-[5px] bg-[#EFE3C9]" style={{height:'82px'}}></div><span className="text-[11px] text-text-muted font-semibold">Fri</span></div>
+              <div className="flex-1 flex flex-col items-center gap-1.5"><div className="w-full rounded-t-[5px] bg-[#EFE3C9]" style={{height:'44px'}}></div><span className="text-[11px] text-text-muted font-semibold">Sat</span></div>
+              <div className="flex-1 flex flex-col items-center gap-1.5"><div className="w-full rounded-t-[5px] bg-[#EFE3C9]" style={{height:'96px'}}></div><span className="text-[11px] text-text-muted font-semibold">Sun</span></div>
+              <div className="flex-1 flex flex-col items-center gap-1.5"><div className="w-full rounded-t-[5px] bg-[#EFE3C9]" style={{height:'70px'}}></div><span className="text-[11px] text-text-muted font-semibold">Mon</span></div>
+              <div className="flex-1 flex flex-col items-center gap-1.5"><div className="w-full rounded-t-[5px] bg-[#EFE3C9]" style={{height:'64px'}}></div><span className="text-[11px] text-text-muted font-semibold">Tue</span></div>
+              <div className="flex-1 flex flex-col items-center gap-1.5"><div className="w-full rounded-t-[5px] bg-primary" style={{height:'110px'}}></div><span className="text-[11px] text-text-muted font-semibold">Wed</span></div>
+            </div>
+          </div>
+
+          <div className="bg-surface border border-border rounded-xl p-5">
+            <div className="flex justify-between items-center mb-3.5">
+              <h3 className="font-display text-[17px] font-semibold m-0 text-text">Recent orders</h3>
+              <a href="#" className="text-[12.5px] font-bold text-accent-hover hover:underline">View all →</a>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full border-collapse text-[13px]">
+                <thead>
+                  <tr>
+                    <th className="text-left text-text-muted font-semibold text-[11.5px] uppercase tracking-wider pb-2.5 border-b border-border">Order</th>
+                    <th className="text-left text-text-muted font-semibold text-[11.5px] uppercase tracking-wider pb-2.5 border-b border-border">Item</th>
+                    <th className="text-left text-text-muted font-semibold text-[11.5px] uppercase tracking-wider pb-2.5 border-b border-border">Buyer</th>
+                    <th className="text-left text-text-muted font-semibold text-[11.5px] uppercase tracking-wider pb-2.5 border-b border-border">Amount</th>
+                    <th className="text-left text-text-muted font-semibold text-[11.5px] uppercase tracking-wider pb-2.5 border-b border-border">Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {[
+                    { id: '#VH-8823', item: 'Handloom cotton saree', buyer: 'R. Nair, Kochi', amt: '₹1,499', status: 'Pack today', statusClass: 'bg-[#FDF0DA] text-[#B9791C]' },
+                    { id: '#VH-8819', item: 'Linen shirt, tailored', buyer: 'A. Iyer, Chennai', amt: '₹899', status: 'Shipped', statusClass: 'bg-[#E1EFEE] text-[#095857]' },
+                    { id: '#VH-8811', item: 'Kurta set, block print', buyer: 'S. Rao, Hyderabad', amt: '₹1,099', status: 'Delivered', statusClass: 'bg-[#E6F2E9] text-[#1E7A3E]' },
+                    { id: '#VH-8804', item: 'Leather sling bag', buyer: 'P. Menon, Kozhikode', amt: '₹1,699', status: 'Cancelled', statusClass: 'bg-danger-bg text-danger-content' },
+                    { id: '#VH-8798', item: 'Handloom cotton saree', buyer: 'D. Kumar, Bengaluru', amt: '₹1,499', status: 'Pack today', statusClass: 'bg-[#FDF0DA] text-[#B9791C]' },
+                  ].map((row, i) => (
+                    <tr key={i} className="border-b border-border last:border-0">
+                      <td className="py-3 pr-2 font-bold text-text">{row.id}</td>
+                      <td className="py-3 px-2 text-text">{row.item}</td>
+                      <td className="py-3 px-2 text-text-muted text-xs">{row.buyer}</td>
+                      <td className="py-3 px-2 text-text">{row.amt}</td>
+                      <td className="py-3 pl-2">
+                        <span className={`text-[11px] font-bold px-2.5 py-1 rounded-full ${row.statusClass}`}>{row.status}</span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <div className="flex flex-col gap-4">
+          <div className="bg-surface border border-border rounded-xl p-5">
+            <div className="flex justify-between items-center mb-3.5">
+              <h3 className="font-display text-[17px] font-semibold m-0 text-text">Low stock</h3>
+              <a href="#" className="text-[12.5px] font-bold text-accent-hover hover:underline">Manage →</a>
+            </div>
+            {[
+              { img: 'vh-saree1', name: 'Handloom cotton saree', sub: 'Coimbatore weave', stock: '3 left' },
+              { img: 'vh-bag1', name: 'Leather sling bag, tan', sub: 'Accessories', stock: '1 left' },
+              { img: 'vh-shirt1', name: 'Linen shirt, tailored fit', sub: 'Menswear', stock: '5 left' },
+            ].map((item, i) => (
+              <div key={i} className="flex items-center gap-3 py-2.5 border-b border-border last:border-0">
+                <img className="w-10 h-10 rounded-lg object-cover bg-background shrink-0" src={`https://picsum.photos/seed/${item.img}/80/80`} alt="" />
+                <div className="flex-1 min-w-0">
+                  <b className="block text-[12.5px] font-semibold text-text truncate">{item.name}</b>
+                  <span className="text-[11.5px] text-text-muted">{item.sub}</span>
+                </div>
+                <span className="text-[11px] font-bold text-danger-content bg-danger-bg px-2 py-0.5 rounded-[5px] whitespace-nowrap">{item.stock}</span>
+              </div>
+            ))}
+          </div>
+
+          <div className="bg-surface border border-border rounded-xl p-5">
+            <h3 className="font-display text-[17px] font-semibold m-0 mb-3.5 text-text">To do</h3>
+            {[
+              'Pack & dispatch 3 orders before 6pm',
+              'Reply to 2 buyer questions',
+              'Restock 3 low-inventory items',
+              'Confirm bank details for payout'
+            ].map((task, i) => (
+              <div key={i} className="flex items-center gap-2.5 py-2.5 border-b border-border last:border-0 text-[12.5px] text-text">
+                <span className="w-2 h-2 rounded-full bg-danger shrink-0"></span>
+                {task}
+              </div>
+            ))}
+          </div>
+
+          <div className="bg-surface border border-border rounded-xl p-5">
+            <div className="flex justify-between items-center mb-3.5">
+              <h3 className="font-display text-[17px] font-semibold m-0 text-text">Latest reviews</h3>
+              <a href="#" className="text-[12.5px] font-bold text-accent-hover hover:underline">View all →</a>
+            </div>
+            {[
+              { stars: '★★★★★', text: 'Beautiful weave, exactly as pictured. Fast shipping too.', sub: 'R. Nair · 2 days ago' },
+              { stars: '★★★★☆', text: 'Good quality shirt, sizing ran slightly small.', sub: 'A. Iyer · 5 days ago' },
+            ].map((rev, i) => (
+              <div key={i} className="py-3 border-b border-border last:border-0 last:pb-0">
+                <div className="text-[#B9791C] text-xs font-bold mb-1">{rev.stars}</div>
+                <p className="m-0 mb-1 text-[12.5px] text-text-soft">{rev.text}</p>
+                <span className="text-[11px] text-text-muted">{rev.sub}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

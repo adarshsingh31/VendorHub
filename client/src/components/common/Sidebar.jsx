@@ -1,14 +1,6 @@
+import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-
-/**
- * Sidebar — role-aware sidebar navigation.
- *
- * Props:
- *   role     — 'admin' | 'seller' | 'buyer'
- *   userName — display name for the logged-in user
- *   userRole — subtitle text (e.g. "Super Admin")
- */
 
 const NAV_ITEMS = {
   admin: [
@@ -48,91 +40,122 @@ const PANEL_LABELS = {
   buyer: 'Buyer Portal',
 };
 
-export default function Sidebar({ role = 'buyer', userName = 'User', userInitial = 'U' }) {
+export default function Sidebar({ 
+  role = 'buyer', 
+  userName = 'User', 
+  userInitial = 'U',
+  isCollapsed = false,
+  toggleSidebar,
+  isMobileOpen,
+  toggleMobileMenu
+}) {
   const { logout } = useAuth();
   const location = useLocation();
   const navItems = NAV_ITEMS[role] || [];
 
   const isActive = (to) => {
-    // exact match for dashboard root, prefix match for sub-routes
     if (to === `/${role}`) return location.pathname === to;
     return location.pathname.startsWith(to);
   };
 
+  const sidebarWidth = isCollapsed ? 'w-[72px]' : 'w-[240px]';
+  const mobileTransform = isMobileOpen ? 'translate-x-0' : '-translate-x-full';
+
   return (
     <>
-      {/* ── Desktop Sidebar ─────────────────────────────────────────── */}
-      <aside className="hidden md:flex bg-primary text-on-primary h-screen w-64 fixed left-0 top-0 overflow-y-auto border-r border-white/10 flex-col py-4 z-20">
+      {/* Desktop & Mobile Sidebar */}
+      <aside 
+        className={`fixed left-0 top-0 h-screen bg-surface border-r border-border flex flex-col py-4 z-40 transition-all duration-300 md:translate-x-0 ${sidebarWidth} ${mobileTransform}`}
+      >
+        {/* Toggle Button (Desktop Only) */}
+        <button 
+          onClick={toggleSidebar}
+          className="hidden md:flex absolute -right-3 top-6 w-6 h-6 bg-surface border border-border rounded-full items-center justify-center text-text-muted hover:text-primary hover:border-primary transition-colors shadow-soft z-50"
+          title={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+        >
+          <span className="material-symbols-outlined text-[14px]">
+            {isCollapsed ? 'chevron_right' : 'chevron_left'}
+          </span>
+        </button>
+
+        {/* Mobile Close Button */}
+        <button 
+          onClick={toggleMobileMenu}
+          className="md:hidden absolute right-4 top-4 text-text-muted hover:text-text p-1"
+        >
+          <span className="material-symbols-outlined">close</span>
+        </button>
+
         {/* Logo */}
-        <div className="px-6 pb-8 pt-2 flex items-center gap-3">
-          <span
-            className="material-symbols-outlined text-4xl text-secondary-container"
-            style={{ fontVariationSettings: "'FILL' 1" }}
-          >
+        <div className={`px-4 pb-6 pt-2 flex items-center ${isCollapsed ? 'justify-center' : 'gap-3'}`}>
+          <span className="material-symbols-outlined text-3xl text-primary" style={{ fontVariationSettings: "'FILL' 1" }}>
             storefront
           </span>
-          <div>
-            <h1 className="text-xl font-bold text-on-primary tracking-tight">VendorHub</h1>
-            <p className="text-xs text-on-primary/60">{PANEL_LABELS[role]}</p>
-          </div>
+          {!isCollapsed && (
+            <div className="overflow-hidden">
+              <h1 className="text-lg font-display font-bold text-text tracking-tight truncate">Vendor<span className="text-primary">Hub</span></h1>
+              <p className="text-[11px] text-text-muted font-semibold uppercase tracking-wider truncate">{PANEL_LABELS[role]}</p>
+            </div>
+          )}
         </div>
 
         {/* Nav links */}
-        <nav className="flex-1 flex flex-col gap-1 px-3">
-          {navItems.map((item) => (
-            <Link
-              key={item.to}
-              to={item.to}
-              className={`flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-semibold transition-colors duration-150 ${
-                isActive(item.to)
-                  ? 'bg-white/10 text-on-primary border-l-4 border-secondary-container'
-                  : 'text-on-primary/70 hover:text-on-primary hover:bg-white/5'
-              }`}
-            >
-              <span className="material-symbols-outlined text-[20px]">{item.icon}</span>
-              {item.label}
-            </Link>
-          ))}
+        <nav className="flex-1 flex flex-col gap-1 px-3 overflow-y-auto overflow-x-hidden no-scrollbar">
+          {navItems.map((item) => {
+            const active = isActive(item.to);
+            return (
+              <Link
+                key={item.to}
+                to={item.to}
+                title={isCollapsed ? item.label : undefined}
+                className={`flex items-center rounded-lg text-sm font-semibold transition-colors duration-150 relative group ${
+                  isCollapsed ? 'justify-center p-3' : 'gap-3 px-3 py-2.5'
+                } ${
+                  active
+                    ? 'bg-primary/10 text-primary-hover'
+                    : 'text-text-soft hover:text-text hover:bg-surface-sunken'
+                }`}
+              >
+                {active && <span className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-5 bg-primary rounded-r-full" />}
+                <span className={`material-symbols-outlined ${active ? 'text-primary' : ''} ${isCollapsed ? 'text-[22px]' : 'text-[20px]'}`}>
+                  {item.icon}
+                </span>
+                {!isCollapsed && <span className="truncate">{item.label}</span>}
+              </Link>
+            );
+          })}
         </nav>
 
         {/* Bottom: user info + logout */}
-        <div className="mt-auto pt-4 border-t border-white/10 px-3 flex flex-col gap-1">
-          <div className="flex items-center gap-3 px-4 py-3 bg-white/5 rounded-lg mx-0">
-            <div className="w-9 h-9 rounded-full bg-secondary-container text-on-secondary flex items-center justify-center font-bold text-sm shrink-0">
+        <div className="mt-auto pt-4 border-t border-border px-3 flex flex-col gap-2">
+          {!isCollapsed ? (
+            <div className="flex items-center gap-3 px-3 py-2 bg-surface-sunken rounded-lg">
+              <div className="w-8 h-8 rounded-full bg-primary/20 text-primary-hover flex items-center justify-center font-bold text-sm shrink-0">
+                {userInitial}
+              </div>
+              <div className="overflow-hidden">
+                <p className="text-[13px] font-semibold text-text truncate">{userName}</p>
+                <p className="text-[11px] text-text-muted capitalize truncate">{role}</p>
+              </div>
+            </div>
+          ) : (
+            <div className="w-10 h-10 mx-auto rounded-full bg-primary/20 text-primary-hover flex items-center justify-center font-bold text-sm" title={userName}>
               {userInitial}
             </div>
-            <div className="overflow-hidden">
-              <p className="text-sm font-semibold text-on-primary truncate">{userName}</p>
-              <p className="text-xs text-secondary-container capitalize">{role}</p>
-            </div>
-          </div>
+          )}
+          
           <button
             onClick={logout}
-            className="flex items-center gap-3 px-4 py-2.5 text-on-primary/70 hover:text-on-primary hover:bg-white/5 rounded-lg text-sm font-semibold transition-colors"
+            title={isCollapsed ? "Logout" : undefined}
+            className={`flex items-center rounded-lg text-sm font-semibold transition-colors text-text-soft hover:text-danger hover:bg-danger-bg ${
+              isCollapsed ? 'justify-center p-3' : 'gap-3 px-3 py-2.5'
+            }`}
           >
             <span className="material-symbols-outlined text-[20px]">logout</span>
-            Logout
+            {!isCollapsed && <span>Logout</span>}
           </button>
         </div>
       </aside>
-
-      {/* ── Mobile Bottom Nav ────────────────────────────────────────── */}
-      <nav className="md:hidden fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-2 py-2 pb-safe bg-surface border-t border-outline/10 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.08)]">
-        {navItems.slice(0, 5).map((item) => (
-          <Link
-            key={item.to}
-            to={item.to}
-            className={`flex flex-col items-center gap-0.5 px-2 py-1 rounded-xl text-xs font-semibold transition-colors ${
-              isActive(item.to)
-                ? 'text-primary'
-                : 'text-on-surface-variant'
-            }`}
-          >
-            <span className="material-symbols-outlined text-[22px]">{item.icon}</span>
-            <span className="text-[10px]">{item.label.split(' ')[0]}</span>
-          </Link>
-        ))}
-      </nav>
     </>
   );
 }

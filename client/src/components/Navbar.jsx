@@ -31,15 +31,17 @@ export default function Navbar() {
   return (
     <header
       className={`sticky top-0 z-50 w-full transition-all duration-300 ${
-        scrolled ? 'border-b border-border/80 bg-white/75 backdrop-blur-lg shadow-[0_1px_0_rgba(14,18,36,0.02)]' : 'bg-transparent'
+        scrolled ? 'border-b border-border/80 bg-surface/90 backdrop-blur-lg shadow-soft' : 'bg-transparent'
       }`}
     >
-      <nav className="container-page flex h-18 items-center justify-between py-3">
-        <Link to="/" className="flex items-center gap-2">
-          <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-brand-500 to-brand-700 text-white shadow-brand">
+      <nav className="container-page flex h-16 items-center justify-between py-3">
+        <Link to="/" className="flex items-center gap-2.5">
+          <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary text-primary-content shadow-brand">
             <ShoppingBag size={19} strokeWidth={2.3} />
           </span>
-          <span className="font-display text-lg font-extrabold tracking-tight text-ink-900">VendorHub</span>
+          <span className="font-display text-lg font-bold tracking-tight text-text">
+            Vendor<span className="text-primary">Hub</span>
+          </span>
         </Link>
 
         <div className="hidden items-center gap-1 lg:flex">
@@ -47,7 +49,7 @@ export default function Navbar() {
             <NavLink
               key={link.label}
               to={link.to}
-              className="rounded-full px-4 py-2 text-sm font-medium text-ink-700 transition-colors hover:bg-surface-sunken hover:text-brand-600"
+              className="rounded-lg px-4 py-2 text-sm font-semibold text-text-soft transition-colors hover:bg-surface-sunken hover:text-primary"
             >
               {link.label}
             </NavLink>
@@ -57,7 +59,7 @@ export default function Navbar() {
         <div className="hidden items-center gap-2 lg:flex">
           <button
             aria-label="Search"
-            className="flex h-10 w-10 items-center justify-center rounded-full text-ink-500 transition-colors hover:bg-surface-sunken hover:text-ink-900"
+            className="flex h-10 w-10 items-center justify-center rounded-full text-text-muted transition-colors hover:bg-surface-sunken hover:text-text"
           >
             <Search size={19} />
           </button>
@@ -80,25 +82,25 @@ export default function Navbar() {
           )}
           <button
             aria-label="Cart"
-            className="relative flex h-10 w-10 items-center justify-center rounded-full text-ink-500 transition-colors hover:bg-surface-sunken hover:text-ink-900"
+            className="relative flex h-10 w-10 items-center justify-center rounded-full text-text-muted transition-colors hover:bg-surface-sunken hover:text-text"
           >
             <ShoppingCart size={19} />
-            <span className="absolute right-1 top-1 h-2 w-2 rounded-full bg-local-500" />
+            <span className="absolute right-1 top-1 h-2 w-2 rounded-full bg-accent" />
           </button>
         </div>
 
         <div className="flex items-center gap-1 lg:hidden">
           <button
             aria-label="Cart"
-            className="relative flex h-10 w-10 items-center justify-center rounded-full text-ink-500 hover:bg-surface-sunken"
+            className="relative flex h-10 w-10 items-center justify-center rounded-full text-text-muted hover:bg-surface-sunken"
           >
             <ShoppingCart size={20} />
-            <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-local-500" />
+            <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-accent" />
           </button>
           <button
             aria-label="Toggle menu"
             onClick={() => setMobileOpen((v) => !v)}
-            className="flex h-10 w-10 items-center justify-center rounded-full text-ink-700 hover:bg-surface-sunken"
+            className="flex h-10 w-10 items-center justify-center rounded-full text-text hover:bg-surface-sunken"
           >
             {mobileOpen ? <X size={22} /> : <Menu size={22} />}
           </button>
@@ -106,14 +108,14 @@ export default function Navbar() {
       </nav>
 
       {mobileOpen && (
-        <div className="border-t border-border bg-white/98 backdrop-blur-lg lg:hidden">
+        <div className="border-t border-border bg-surface/98 backdrop-blur-lg lg:hidden">
           <div className="container-page flex flex-col gap-1 py-4">
             {navLinks.map((link) => (
               <NavLink
                 key={link.label}
                 to={link.to}
                 onClick={() => setMobileOpen(false)}
-                className="rounded-xl px-3 py-3 text-[15px] font-medium text-ink-700 transition-colors hover:bg-surface-sunken"
+                className="rounded-xl px-3 py-3 text-[15px] font-medium text-text-soft transition-colors hover:bg-surface-sunken hover:text-text"
               >
                 {link.label}
               </NavLink>

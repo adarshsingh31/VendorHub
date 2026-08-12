@@ -4,7 +4,7 @@ export default function GoogleAuthButton({ label = 'Continue with Google', onCli
       type="button"
       onClick={onClick}
       disabled={disabled}
-      className="inline-flex h-12 w-full items-center justify-center gap-3 rounded-xl border border-border bg-white text-[15px] font-medium text-ink-700 shadow-[0_1px_2px_rgba(14,18,36,0.06)] transition-all duration-150 hover:bg-surface-soft hover:shadow-soft active:scale-[0.99] disabled:opacity-50"
+      className="inline-flex h-12 w-full items-center justify-center gap-3 rounded-xl border border-border bg-surface text-[15px] font-medium text-text shadow-[0_1px_2px_rgba(14,18,36,0.06)] transition-all duration-150 hover:bg-surface-soft hover:shadow-soft active:scale-[0.99] disabled:opacity-50"
     >
       <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true">
         <path

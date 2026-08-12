@@ -8,7 +8,7 @@ export default function StatsSection() {
           {stats.map((s, i) => (
             <div key={s.label} className={`text-center ${i < stats.length - 1 ? 'sm:border-r sm:border-border' : ''}`}>
               <p className="font-display text-3xl font-extrabold text-gradient-brand sm:text-4xl">{s.value}</p>
-              <p className="mt-1.5 text-sm text-ink-500">{s.label}</p>
+              <p className="mt-1.5 text-sm text-text-muted">{s.label}</p>
             </div>
           ))}
         </div>

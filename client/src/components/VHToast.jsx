@@ -33,13 +33,13 @@ export default function VHToast({ title, description, variant = 'default', onDis
         <Icon className={`h-4 w-4 ${v.iconColor}`} size={18} />
       </span>
       <div className="min-w-0 flex-1">
-        {title && <p className="text-sm font-semibold text-ink-900">{title}</p>}
-        {description && <p className="mt-0.5 text-sm text-ink-500">{description}</p>}
+        {title && <p className="text-sm font-semibold text-text">{title}</p>}
+        {description && <p className="mt-0.5 text-sm text-text-muted">{description}</p>}
       </div>
       <button
         onClick={onDismiss}
         aria-label="Dismiss notification"
-        className="shrink-0 rounded-full p-1 text-ink-400 transition-colors hover:bg-surface-sunken hover:text-ink-700"
+        className="shrink-0 rounded-full p-1 text-text-muted transition-colors hover:bg-surface-sunken hover:text-text"
       >
         <X size={16} />
       </button>

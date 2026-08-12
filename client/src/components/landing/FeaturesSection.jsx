@@ -17,7 +17,7 @@ export default function FeaturesSection() {
     <section className="bg-surface-soft py-20 sm:py-24">
       <div className="container-page">
         <div className="max-w-xl">
-          <h2 className="font-display text-3xl font-extrabold tracking-tight text-ink-900 sm:text-4xl">
+          <h2 className="font-display text-3xl font-bold tracking-tight text-text sm:text-4xl">
             Built for Modern Local Commerce
           </h2>
         </div>

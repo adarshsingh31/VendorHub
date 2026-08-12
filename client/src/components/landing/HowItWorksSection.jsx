@@ -26,7 +26,7 @@ export default function HowItWorksSection() {
     <section id="how-it-works" className="bg-surface-soft py-20 sm:py-24">
       <div className="container-page">
         <div className="max-w-xl">
-          <h2 className="font-display text-3xl font-extrabold tracking-tight text-ink-900 sm:text-4xl">
+          <h2 className="font-display text-3xl font-bold tracking-tight text-text sm:text-4xl">
             Everything You Need. All in One Place.
           </h2>
         </div>
@@ -36,14 +36,14 @@ export default function HowItWorksSection() {
           {steps.map((step) => (
             <div
               key={step.n}
-              className="relative flex flex-col items-start rounded-3xl border border-border bg-white p-7 shadow-soft transition-all duration-300 hover:-translate-y-1 hover:shadow-soft-lg"
+              className="relative flex flex-col items-start rounded-3xl border border-border bg-surface p-7 shadow-soft transition-all duration-300 hover:-translate-y-1 hover:shadow-soft-lg"
             >
-              <span className="font-display text-4xl font-extrabold text-brand-100">{step.n}</span>
-              <span className="mt-1 flex h-11 w-11 items-center justify-center rounded-xl bg-brand-50 text-brand-600">
+              <span className="font-display text-4xl font-bold text-primary/20">{step.n}</span>
+              <span className="mt-1 flex h-11 w-11 items-center justify-center rounded-xl bg-primary/10 text-primary">
                 <step.icon size={20} />
               </span>
-              <h3 className="mt-4 font-display text-lg font-semibold text-ink-900">{step.title}</h3>
-              <p className="mt-1.5 text-sm leading-relaxed text-ink-500">{step.desc}</p>
+              <h3 className="mt-4 font-display text-lg font-semibold text-text">{step.title}</h3>
+              <p className="mt-1.5 text-sm leading-relaxed text-text-muted">{step.desc}</p>
             </div>
           ))}
         </div>

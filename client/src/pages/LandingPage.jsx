@@ -5,7 +5,6 @@ import CategoriesSection from '../components/landing/CategoriesSection.jsx'
 import HowItWorksSection from '../components/landing/HowItWorksSection.jsx'
 import AISection from '../components/landing/AISection.jsx'
 import LocalMarketplaceSection from '../components/landing/LocalMarketplaceSection.jsx'
-import SellerCTASection from '../components/landing/SellerCTASection.jsx'
 import FeaturesSection from '../components/landing/FeaturesSection.jsx'
 import StatsSection from '../components/landing/StatsSection.jsx'
 import TestimonialsSection from '../components/landing/TestimonialsSection.jsx'
@@ -21,7 +20,6 @@ export default function LandingPage() {
         <HowItWorksSection />
         <AISection />
         <LocalMarketplaceSection />
-        <SellerCTASection />
         <FeaturesSection />
         <StatsSection />
         <TestimonialsSection />

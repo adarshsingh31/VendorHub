@@ -22,13 +22,13 @@ export default function SearchBar({
         isLg ? 'sm:p-2' : ''
       }`}
     >
-      <Search size={isLg ? 20 : 18} className="ml-3 shrink-0 text-ink-400" />
+      <Search size={isLg ? 20 : 18} className="ml-3 shrink-0 text-text-muted" />
       <input
         value={value}
         onChange={(e) => setValue(e.target.value)}
         type="text"
         placeholder={placeholder}
-        className={`min-w-0 flex-1 bg-transparent text-ink-900 placeholder:text-ink-400 outline-none ${
+        className={`min-w-0 flex-1 bg-transparent text-text placeholder:text-text-muted outline-none ${
           isLg ? 'text-[15px] py-2.5' : 'text-sm py-1.5'
         }`}
       />
