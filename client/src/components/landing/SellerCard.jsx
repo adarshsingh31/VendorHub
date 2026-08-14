@@ -2,7 +2,7 @@ import { Star, MapPin, Truck, BadgeCheck } from 'lucide-react'
 
 export default function SellerCard({ name, category, rating, distance, delivery, verified, initials, color }) {
   return (
-    <div className="group flex items-center gap-4 rounded-2xl border border-border bg-white p-4 shadow-soft transition-all duration-300 hover:-translate-y-0.5 hover:shadow-soft-lg sm:p-5">
+    <div className="group flex items-center gap-4 rounded-2xl border border-border bg-surface p-4 shadow-soft transition-all duration-300 hover:-translate-y-0.5 hover:shadow-soft-lg sm:p-5">
       <span
         className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br ${color} font-display text-base font-bold text-white`}
       >

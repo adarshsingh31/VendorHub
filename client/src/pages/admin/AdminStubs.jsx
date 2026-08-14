@@ -1,6 +1,3 @@
-import Sidebar from '../../components/common/Sidebar';
-import { useAuth } from '../../context/AuthContext';
-
 const stubPages = {
   SellerApplications: { title: 'Seller Applications', icon: 'assignment', desc: 'Review and manage seller onboarding requests.' },
   Users:              { title: 'Users', icon: 'group', desc: 'View and manage all registered buyers.' },
@@ -12,22 +9,16 @@ const stubPages = {
 };
 
 function AdminStubPage({ pageKey }) {
-  const { user } = useAuth();
-  const userName = user?.name || 'Admin';
-  const userInitial = userName.charAt(0).toUpperCase();
   const page = stubPages[pageKey];
 
   return (
-    <div className="font-body-md text-on-surface min-h-screen bg-surface flex">
-      <Sidebar role="admin" userName={userName} userInitial={userInitial} />
-      <main className="flex-1 md:ml-64 p-6 pb-20 md:pb-6 flex flex-col items-center justify-center text-center">
-        <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center mb-4">
-          <span className="material-symbols-outlined text-primary text-4xl">{page.icon}</span>
-        </div>
-        <h1 className="text-2xl font-bold text-on-surface mb-2">{page.title}</h1>
-        <p className="text-on-surface-variant max-w-md">{page.desc}</p>
-        <p className="text-sm text-on-surface-variant/60 mt-4">This page is under construction. Backend integration coming soon.</p>
-      </main>
+    <div className="py-12 flex flex-col items-center justify-center text-center">
+      <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center mb-4 text-primary animate-float">
+        <span className="material-symbols-outlined text-4xl">{page.icon}</span>
+      </div>
+      <h1 className="text-2xl font-display font-bold text-text mb-2">{page.title}</h1>
+      <p className="text-text-soft max-w-md">{page.desc}</p>
+      <p className="text-sm text-text-muted mt-4">This page is under construction. Backend integration coming soon.</p>
     </div>
   );
 }

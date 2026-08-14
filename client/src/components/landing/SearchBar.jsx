@@ -18,7 +18,7 @@ export default function SearchBar({
   return (
     <form
       onSubmit={handleSubmit}
-      className={`flex w-full items-center gap-2 rounded-full border border-border bg-white p-1.5 shadow-soft transition-shadow duration-200 focus-within:shadow-soft-lg focus-within:border-brand-300 ${
+      className={`flex w-full items-center gap-2 rounded-full border border-border bg-surface p-1.5 shadow-soft transition-shadow duration-200 focus-within:shadow-soft-lg focus-within:border-primary/50 ${
         isLg ? 'sm:p-2' : ''
       }`}
     >
@@ -34,7 +34,7 @@ export default function SearchBar({
       />
       <button
         type="submit"
-        className={`shrink-0 rounded-full bg-brand-600 font-semibold text-white transition-colors hover:bg-brand-700 ${
+        className={`shrink-0 rounded-full bg-primary font-semibold text-primary-content transition-colors hover:bg-primary-hover ${
           isLg ? 'px-6 py-3 text-sm' : 'px-4 py-2 text-sm'
         }`}
       >

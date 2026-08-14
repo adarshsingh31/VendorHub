@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { Mail, User, ShoppingBag, Store, Info, Check } from 'lucide-react'
+import { Mail, User } from 'lucide-react'
 import axios from 'axios'
 import AuthLayout from '../components/AuthLayout.jsx'
 import VHInput from '../components/VHInput.jsx'
@@ -14,20 +14,7 @@ import { useAuth } from '../context/AuthContext'
 const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000'
 const ROLE_DASHBOARD = { buyer: '/buyer', seller: '/seller', admin: '/admin' }
 
-const roles = [
-  {
-    id: 'buyer',
-    icon: ShoppingBag,
-    title: 'Shop on VendorHub',
-    subtitle: 'Buyer',
-  },
-  {
-    id: 'seller',
-    icon: Store,
-    title: 'Sell on VendorHub',
-    subtitle: 'Seller',
-  },
-]
+
 
 function validate({ fullName, email, password, confirmPassword, agree }) {
   const errors = {}
@@ -104,10 +91,7 @@ export default function SignUpPage() {
       toast({
         variant: 'success',
         title: 'Account created',
-        description:
-          form.role === 'seller'
-            ? 'Your seller account is pending admin approval.'
-            : 'Welcome to VendorHub!',
+        description: 'Welcome to VendorHub!',
       })
 
       handleAuthSuccess(data)
@@ -166,52 +150,6 @@ export default function SignUpPage() {
           </div>
         )}
 
-        {/* Role selection */}
-        <div>
-          <p className="mb-2 text-[13px] font-semibold text-text">I want to...</p>
-          <div className="grid grid-cols-2 gap-3">
-            {roles.map((role) => {
-              const active = form.role === role.id
-              return (
-                <button
-                  type="button"
-                  key={role.id}
-                  onClick={() => setForm((f) => ({ ...f, role: role.id }))}
-                  className={`relative flex flex-col items-start gap-2.5 rounded-xl border-2 p-4 text-left transition-all duration-200 ${
-                    active
-                      ? 'border-primary bg-primary/5 shadow-soft'
-                      : 'border-border bg-surface hover:border-primary/30'
-                  }`}
-                >
-                  {active && (
-                    <span className="absolute right-3 top-3 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-primary-content">
-                      <Check size={12} strokeWidth={3} />
-                    </span>
-                  )}
-                  <span
-                    className={`flex h-10 w-10 items-center justify-center rounded-xl ${
-                      active ? 'bg-primary text-primary-content' : 'bg-surface-sunken text-text-muted'
-                    }`}
-                  >
-                    <role.icon size={18} />
-                  </span>
-                  <div>
-                    <p className="text-sm font-semibold text-text">{role.title}</p>
-                    <p className="text-xs text-text-muted">{role.subtitle}</p>
-                  </div>
-                </button>
-              )
-            })}
-          </div>
-          {form.role === 'seller' && (
-            <div className="mt-3 flex items-start gap-2 rounded-xl border border-amber-500/25 bg-amber-500/5 px-3.5 py-3">
-              <Info size={15} className="mt-0.5 shrink-0 text-amber-500" />
-              <p className="text-xs leading-relaxed text-ink-600">
-                Seller accounts require admin approval before you can start selling.
-              </p>
-            </div>
-          )}
-        </div>
 
         <VHInput
           label="Full Name"

@@ -58,45 +58,32 @@ export default function Sidebar({
     return location.pathname.startsWith(to);
   };
 
-  const sidebarWidth = isCollapsed ? 'w-[72px]' : 'w-[240px]';
+  const sidebarWidth = isCollapsed ? 'md:w-[72px]' : 'md:w-[240px]';
   const mobileTransform = isMobileOpen ? 'translate-x-0' : '-translate-x-full';
 
   return (
     <>
-      {/* Desktop & Mobile Sidebar */}
       <aside 
-        className={`fixed left-0 top-0 h-screen bg-surface border-r border-border flex flex-col py-4 z-40 transition-all duration-300 md:translate-x-0 ${sidebarWidth} ${mobileTransform}`}
+        className={`fixed md:sticky left-0 top-0 h-screen bg-surface border-r border-border flex flex-col py-4 z-40 transition-all duration-300 w-[240px] ${sidebarWidth} ${mobileTransform} md:translate-x-0 shrink-0`}
       >
-        {/* Toggle Button (Desktop Only) */}
-        <button 
-          onClick={toggleSidebar}
-          className="hidden md:flex absolute -right-3 top-6 w-6 h-6 bg-surface border border-border rounded-full items-center justify-center text-text-muted hover:text-primary hover:border-primary transition-colors shadow-soft z-50"
-          title={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
-        >
-          <span className="material-symbols-outlined text-[14px]">
-            {isCollapsed ? 'chevron_right' : 'chevron_left'}
-          </span>
-        </button>
-
         {/* Mobile Close Button */}
         <button 
           onClick={toggleMobileMenu}
           className="md:hidden absolute right-4 top-4 text-text-muted hover:text-text p-1"
+          title="Close navigation menu"
         >
           <span className="material-symbols-outlined">close</span>
         </button>
 
         {/* Logo */}
-        <div className={`px-4 pb-6 pt-2 flex items-center ${isCollapsed ? 'justify-center' : 'gap-3'}`}>
-          <span className="material-symbols-outlined text-3xl text-primary" style={{ fontVariationSettings: "'FILL' 1" }}>
+        <div className={`px-4 pb-6 pt-2 flex items-center shrink-0 ${isCollapsed ? 'md:justify-center' : 'gap-3'}`}>
+          <span className="material-symbols-outlined text-3xl text-primary shrink-0" style={{ fontVariationSettings: "'FILL' 1" }}>
             storefront
           </span>
-          {!isCollapsed && (
-            <div className="overflow-hidden">
-              <h1 className="text-lg font-display font-bold text-text tracking-tight truncate">Vendor<span className="text-primary">Hub</span></h1>
-              <p className="text-[11px] text-text-muted font-semibold uppercase tracking-wider truncate">{PANEL_LABELS[role]}</p>
-            </div>
-          )}
+          <div className={`overflow-hidden transition-all duration-300 ${isCollapsed ? 'md:w-0 md:opacity-0' : 'w-auto opacity-100'}`}>
+            <h1 className="text-lg font-display font-bold text-text tracking-tight truncate">Vendor<span className="text-primary">Hub</span></h1>
+            <p className="text-[11px] text-text-muted font-semibold uppercase tracking-wider truncate">{PANEL_LABELS[role]}</p>
+          </div>
         </div>
 
         {/* Nav links */}
@@ -108,51 +95,51 @@ export default function Sidebar({
                 key={item.to}
                 to={item.to}
                 title={isCollapsed ? item.label : undefined}
-                className={`flex items-center rounded-lg text-sm font-semibold transition-colors duration-150 relative group ${
-                  isCollapsed ? 'justify-center p-3' : 'gap-3 px-3 py-2.5'
+                onClick={() => {
+                  if (isMobileOpen) toggleMobileMenu();
+                }}
+                className={`flex items-center rounded-lg text-sm font-semibold transition-all duration-200 relative group ${
+                  isCollapsed ? 'md:justify-center md:gap-0 p-3' : 'gap-3 px-3 py-2.5'
                 } ${
                   active
-                    ? 'bg-primary/10 text-primary-hover'
+                    ? 'bg-primary text-primary-content shadow-sm'
                     : 'text-text-soft hover:text-text hover:bg-surface-sunken'
                 }`}
               >
-                {active && <span className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-5 bg-primary rounded-r-full" />}
-                <span className={`material-symbols-outlined ${active ? 'text-primary' : ''} ${isCollapsed ? 'text-[22px]' : 'text-[20px]'}`}>
+                <span className={`material-symbols-outlined shrink-0 ${active ? 'text-primary-content' : 'text-text-muted'} ${isCollapsed ? 'text-[22px]' : 'text-[20px]'}`}>
                   {item.icon}
                 </span>
-                {!isCollapsed && <span className="truncate">{item.label}</span>}
+                <span className={`overflow-hidden transition-all duration-300 ${isCollapsed ? 'md:w-0 md:opacity-0 md:ml-0' : 'w-auto opacity-100 ml-0'}`}>
+                  {item.label}
+                </span>
               </Link>
             );
           })}
         </nav>
 
         {/* Bottom: user info + logout */}
-        <div className="mt-auto pt-4 border-t border-border px-3 flex flex-col gap-2">
-          {!isCollapsed ? (
-            <div className="flex items-center gap-3 px-3 py-2 bg-surface-sunken rounded-lg">
-              <div className="w-8 h-8 rounded-full bg-primary/20 text-primary-hover flex items-center justify-center font-bold text-sm shrink-0">
-                {userInitial}
-              </div>
-              <div className="overflow-hidden">
-                <p className="text-[13px] font-semibold text-text truncate">{userName}</p>
-                <p className="text-[11px] text-text-muted capitalize truncate">{role}</p>
-              </div>
-            </div>
-          ) : (
-            <div className="w-10 h-10 mx-auto rounded-full bg-primary/20 text-primary-hover flex items-center justify-center font-bold text-sm" title={userName}>
+        <div className="mt-auto pt-4 border-t border-border px-3 flex flex-col gap-2 shrink-0">
+          <div className={`flex items-center rounded-lg transition-all duration-300 bg-surface-sunken ${isCollapsed ? 'md:justify-center p-2' : 'gap-3 px-3 py-2'}`}>
+            <div className="w-8 h-8 rounded-full bg-primary/20 text-primary-hover flex items-center justify-center font-bold text-sm shrink-0" title={userName}>
               {userInitial}
             </div>
-          )}
+            <div className={`overflow-hidden transition-all duration-300 ${isCollapsed ? 'md:w-0 md:opacity-0' : 'w-auto opacity-100'}`}>
+              <p className="text-[13px] font-semibold text-text truncate">{userName}</p>
+              <p className="text-[11px] text-text-muted capitalize truncate">{role}</p>
+            </div>
+          </div>
           
           <button
             onClick={logout}
             title={isCollapsed ? "Logout" : undefined}
-            className={`flex items-center rounded-lg text-sm font-semibold transition-colors text-text-soft hover:text-danger hover:bg-danger-bg ${
-              isCollapsed ? 'justify-center p-3' : 'gap-3 px-3 py-2.5'
+            className={`flex items-center rounded-lg text-sm font-semibold transition-all duration-150 text-text-soft hover:text-danger hover:bg-danger-bg ${
+              isCollapsed ? 'md:justify-center md:gap-0 p-3' : 'gap-3 px-3 py-2.5'
             }`}
           >
-            <span className="material-symbols-outlined text-[20px]">logout</span>
-            {!isCollapsed && <span>Logout</span>}
+            <span className="material-symbols-outlined text-[20px] shrink-0">logout</span>
+            <span className={`overflow-hidden transition-all duration-300 ${isCollapsed ? 'md:w-0 md:opacity-0' : 'w-auto opacity-100'}`}>
+              Logout
+            </span>
           </button>
         </div>
       </aside>
