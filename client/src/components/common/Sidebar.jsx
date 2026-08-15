@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { useShop } from '../../context/ShopContext';
 
 const NAV_ITEMS = {
   admin: [
@@ -51,11 +52,19 @@ export default function Sidebar({
 }) {
   const { logout } = useAuth();
   const location = useLocation();
+  const { cartCount, wishlistCount } = useShop();
   const navItems = NAV_ITEMS[role] || [];
 
   const isActive = (to) => {
     if (to === `/${role}`) return location.pathname === to;
     return location.pathname.startsWith(to);
+  };
+
+  const getBadge = (to) => {
+    if (role !== 'buyer') return null;
+    if (to === '/buyer/cart' && cartCount > 0) return cartCount;
+    if (to === '/buyer/wishlist' && wishlistCount > 0) return wishlistCount;
+    return null;
   };
 
   const sidebarWidth = isCollapsed ? 'md:w-[72px]' : 'md:w-[240px]';
@@ -109,8 +118,16 @@ export default function Sidebar({
                 <span className={`material-symbols-outlined shrink-0 ${active ? 'text-primary-content' : 'text-text-muted'} ${isCollapsed ? 'text-[22px]' : 'text-[20px]'}`}>
                   {item.icon}
                 </span>
-                <span className={`overflow-hidden transition-all duration-300 ${isCollapsed ? 'md:w-0 md:opacity-0 md:ml-0' : 'w-auto opacity-100 ml-0'}`}>
+                <span className={`overflow-hidden transition-all duration-300 flex items-center gap-2 ${isCollapsed ? 'md:w-0 md:opacity-0 md:ml-0' : 'w-auto opacity-100 ml-0'}`}>
                   {item.label}
+                  {getBadge(item.to) && (
+                    <span
+                      className="inline-flex items-center justify-center text-[10px] font-bold rounded-full px-1.5 min-w-[18px] h-[18px]"
+                      style={{ background: active ? 'rgba(255,255,255,0.3)' : 'var(--color-primary)', color: active ? '#fff' : 'var(--color-primary-content)' }}
+                    >
+                      {getBadge(item.to)}
+                    </span>
+                  )}
                 </span>
               </Link>
             );

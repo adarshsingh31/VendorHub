@@ -18,6 +18,21 @@ export const updateProduct = async (id, formData) => {
   return response.data;
 };
 
+export const getAllProducts = async (params = {}) => {
+  const { search, category, minPrice, maxPrice, sort, page, limit } = params;
+  let query = "?";
+  if (search) query += `search=${encodeURIComponent(search)}&`;
+  if (category) query += `category=${encodeURIComponent(category)}&`;
+  if (minPrice) query += `minPrice=${minPrice}&`;
+  if (maxPrice) query += `maxPrice=${maxPrice}&`;
+  if (sort) query += `sort=${sort}&`;
+  if (page) query += `page=${page}&`;
+  if (limit) query += `limit=${limit}&`;
+  
+  const response = await api.get(`/api/products${query}`);
+  return response.data;
+};
+
 export const getSellerProducts = async () => {
   const response = await api.get("/api/products/seller");
   return response.data;

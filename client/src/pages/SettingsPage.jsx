@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import api from '../services/axiosInstance'
 import { useAuth } from '../context/AuthContext'
+import AddressManagement from '../components/AddressManagement'
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -479,6 +480,11 @@ export default function SettingsPage() {
               </div>
             )}
 
+          </SectionCard>
+
+          {/* ── Address Management ── */}
+          <SectionCard title="Address Management" icon="home_work">
+            <AddressManagement />
           </SectionCard>
 
         </div>

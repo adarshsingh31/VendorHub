@@ -992,14 +992,7 @@ function Field({ label, value, onChange, placeholder }) {
   );
 }
 
-export const BuyerProductsPage = () => (
-  <BuyerStubPage pageKey="BuyerProducts" />
-);
-export const ProductDetailsPage = () => (
-  <BuyerStubPage pageKey="ProductDetails" />
-);
-export const CartPage = () => <BuyerStubPage pageKey="Cart" />;
+
 export const CheckoutPage = () => <BuyerStubPage pageKey="Checkout" />;
 export const BuyerOrdersPage = () => <BuyerStubPage pageKey="BuyerOrders" />;
-export const WishlistPage = () => <BuyerStubPage pageKey="Wishlist" />;
 export const AddressesPage = () => <SavedAddresses />;

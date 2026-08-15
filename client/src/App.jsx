@@ -40,13 +40,13 @@ import {
 // Buyer pages
 import BuyerDashboard from "./pages/buyer/BuyerDashboard";
 import BecomeSeller from "./pages/buyer/BecomeSeller";
+import BuyerProductsPage from "./pages/buyer/BuyerProductsPage";
+import ProductDetailsPage from "./pages/buyer/ProductDetailsPage";
+import CartPage from "./pages/buyer/CartPage";
+import WishlistPage from "./pages/buyer/WishlistPage";
 import {
-  BuyerProductsPage,
-  ProductDetailsPage,
-  CartPage,
   CheckoutPage,
   BuyerOrdersPage,
-  WishlistPage,
   AddressesPage,
 } from "./pages/buyer/BuyerStubs";
 
