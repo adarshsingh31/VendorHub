@@ -41,11 +41,21 @@ export function AuthProvider({ children }) {
     window.location.href = '/login';
   }, []);
 
+  /**
+   * refreshUser(newUser) — updates the stored user object without issuing a
+   * full login. Called after admin approves a seller application so the buyer's
+   * role propagates to 'seller' immediately.
+   */
+  const refreshUser = useCallback((newUser) => {
+    localStorage.setItem('vh_user', JSON.stringify(newUser));
+    setUser(newUser);
+  }, []);
+
   const isAuthenticated = Boolean(token && user);
   const role = user?.role || null; // 'buyer' | 'seller' | 'admin'
 
   return (
-    <AuthContext.Provider value={{ user, token, login, logout, isAuthenticated, role }}>
+    <AuthContext.Provider value={{ user, token, login, logout, refreshUser, isAuthenticated, role }}>
       {children}
     </AuthContext.Provider>
   );

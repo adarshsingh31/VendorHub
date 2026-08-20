@@ -993,6 +993,6 @@ function Field({ label, value, onChange, placeholder }) {
 }
 
 
-export const CheckoutPage = () => <BuyerStubPage pageKey="Checkout" />;
-export const BuyerOrdersPage = () => <BuyerStubPage pageKey="BuyerOrders" />;
+export { default as CheckoutPage } from "./CheckoutPage";
+export { default as BuyerOrdersPage } from "./BuyerOrdersPage";
 export const AddressesPage = () => <SavedAddresses />;

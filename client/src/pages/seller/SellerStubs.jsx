@@ -15,9 +15,6 @@ import {
   BarChart3,
   Settings,
   MapPin,
-  Store,
-  Menu,
-  LogOut,
 } from "lucide-react";
 
 const C = {
@@ -97,154 +94,7 @@ function SellerStubPage({ pageKey }) {
   );
 }
 
-function SellerLayout({ children, currentPage }) {
-  return (
-    <div
-      style={{
-        background: C.cream,
-        fontFamily: "'Georgia', 'Times New Roman', serif",
-      }}
-      className="min-h-screen w-full flex"
-    >
-      <aside
-        style={{ background: C.white, borderRight: `1px solid ${C.border}` }}
-        className="hidden lg:flex flex-col w-64 shrink-0"
-      >
-        <div
-          className="px-6 py-5"
-          style={{ borderBottom: `1px solid ${C.border}` }}
-        >
-          <div className="flex items-center gap-2">
-            <div
-              style={{ background: C.orange, color: C.navyDark }}
-              className="w-8 h-8 rounded-md flex items-center justify-center"
-            >
-              <Store size={18} />
-            </div>
-            <div>
-              <div
-                style={{ color: C.navyDark }}
-                className="font-bold text-lg leading-none"
-              >
-                Vendor<span style={{ color: C.orange }}>Hub</span>
-              </div>
-            </div>
-          </div>
-          <div
-            style={{ color: C.muted, fontFamily: "system-ui, sans-serif" }}
-            className="text-[11px] tracking-widest mt-2 font-semibold pl-10"
-          >
-            SELLER PORTAL
-          </div>
-        </div>
-
-        <nav
-          style={{ fontFamily: "system-ui, sans-serif" }}
-          className="flex-1 px-3 py-4 flex flex-col gap-1"
-        >
-          {[
-            { path: "products", icon: Package, label: "My Products" },
-            { path: "products/add", icon: Plus, label: "Add Product" },
-            { path: "inventory", icon: Package, label: "Inventory" },
-            { path: "orders", icon: ShoppingCart, label: "Orders" },
-            { path: "earnings", icon: TrendingUp, label: "Earnings" },
-            { path: "reviews", icon: Star, label: "Reviews" },
-            { path: "analytics", icon: BarChart3, label: "Analytics" },
-            { path: "addresses", icon: MapPin, label: "Addresses" },
-            { path: "settings", icon: Settings, label: "Store Settings" },
-          ].map((item) => {
-            const isActive =
-              currentPage === item.label ||
-              currentPage === item.path ||
-              (currentPage?.includes("Product") &&
-                item.label.includes("Product"));
-            const ItemIcon = item.icon;
-            return (
-              <a
-                key={item.label}
-                href={`/seller/${item.path}`}
-                style={{
-                  background: isActive ? C.orange : "transparent",
-                  color: isActive ? C.navyDark : C.navyMed,
-                }}
-                className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-semibold cursor-pointer hover:bg-black/5 transition-colors"
-              >
-                <ItemIcon size={18} />
-                {item.label}
-              </a>
-            );
-          })}
-        </nav>
-
-        <div
-          style={{
-            borderTop: `1px solid ${C.border}`,
-            fontFamily: "system-ui, sans-serif",
-          }}
-          className="p-3"
-        >
-          <div className="flex items-center gap-3 px-2 py-2">
-            <div
-              style={{ background: C.orangeSoft, color: C.orangeDeep }}
-              className="w-9 h-9 rounded-full flex items-center justify-center font-bold text-sm"
-            >
-              S
-            </div>
-            <div>
-              <div style={{ color: C.navyDark }} className="text-sm font-bold">
-                Seller
-              </div>
-              <div style={{ color: C.muted }} className="text-xs">
-                Vendor
-              </div>
-            </div>
-          </div>
-          <div
-            style={{ color: C.navyMed }}
-            className="flex items-center gap-3 px-2 py-2 mt-1 text-sm font-semibold cursor-pointer hover:bg-black/5 rounded-lg"
-          >
-            <LogOut size={16} />
-            Logout
-          </div>
-        </div>
-      </aside>
-
-      <div className="flex-1 flex flex-col min-w-0">
-        <header
-          style={{ background: C.white, borderBottom: `1px solid ${C.border}` }}
-          className="flex items-center justify-between px-6 py-4"
-        >
-          <div className="flex items-center gap-3">
-            <Menu
-              size={20}
-              style={{ color: C.navyMed }}
-              className="lg:hidden"
-            />
-            <div style={{ color: C.navyDark }} className="font-bold text-lg">
-              Vendor<span style={{ color: C.orange }}>Hub</span>
-            </div>
-          </div>
-          <div
-            style={{ fontFamily: "system-ui, sans-serif", color: C.navyMed }}
-            className="flex items-center gap-3 text-sm font-semibold"
-          >
-            Seller Portal
-            <div
-              style={{ background: C.orangeSoft, color: C.orangeDeep }}
-              className="w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm"
-            >
-              S
-            </div>
-          </div>
-        </header>
-
-        <main className="flex-1 px-6 py-10 md:py-14 overflow-auto">
-          {children}
-        </main>
-      </div>
-    </div>
-  );
-}
+// SellerLayout removed — DashboardLayout in ProtectedRoute provides the shared sidebar + header.
 
 function ProductImageSlider({ images = [], fallbackImage }) {
   const safeImages = images.length > 0 ? images : [fallbackImage];
@@ -472,7 +322,7 @@ export function AddProductPage() {
   };
 
   return (
-    <SellerLayout currentPage="Add Product">
+    <>
       <div className="max-w-6xl mx-auto w-full">
         <div className="page-head flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
           <div>
@@ -708,7 +558,7 @@ export function AddProductPage() {
           </div>
         </form>
       </div>
-    </SellerLayout>
+    </>
   );
 }
 
@@ -735,7 +585,7 @@ export function SellerProductsPage() {
   }, []);
 
   return (
-    <SellerLayout currentPage="My Products">
+    <>
       <div className="max-w-6xl mx-auto w-full">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-6">
           <div>
@@ -862,7 +712,7 @@ export function SellerProductsPage() {
           </div>
         )}
       </div>
-    </SellerLayout>
+    </>
   );
 }
 
@@ -1050,16 +900,14 @@ export function EditProductPage() {
 
   if (loadingProduct) {
     return (
-      <SellerLayout currentPage="Edit Product">
-        <div className="max-w-4xl mx-auto w-full py-12 text-center text-text-muted">
-          Loading product details...
-        </div>
-      </SellerLayout>
+      <div className="max-w-4xl mx-auto w-full py-12 text-center text-text-muted">
+        Loading product details...
+      </div>
     );
   }
 
   return (
-    <SellerLayout currentPage="Edit Product">
+    <>
       <div className="max-w-6xl mx-auto w-full">
         <div className="page-head flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
           <div>
@@ -1308,42 +1156,14 @@ export function EditProductPage() {
           </div>
         </form>
       </div>
-    </SellerLayout>
+    </>
   );
 }
 
-export const SellerInventoryPage = () => (
-  <SellerLayout currentPage="Inventory">
-    <SellerStubPage pageKey="SellerInventory" />
-  </SellerLayout>
-);
-export const SellerOrdersPage = () => (
-  <SellerLayout currentPage="Orders">
-    <SellerStubPage pageKey="SellerOrders" />
-  </SellerLayout>
-);
-export const SellerEarningsPage = () => (
-  <SellerLayout currentPage="Earnings">
-    <SellerStubPage pageKey="SellerEarnings" />
-  </SellerLayout>
-);
-export const SellerReviewsPage = () => (
-  <SellerLayout currentPage="Reviews">
-    <SellerStubPage pageKey="SellerReviews" />
-  </SellerLayout>
-);
-export const SellerAnalyticsPage = () => (
-  <SellerLayout currentPage="Analytics">
-    <SellerStubPage pageKey="SellerAnalytics" />
-  </SellerLayout>
-);
-export const SellerSettingsPage = () => (
-  <SellerLayout currentPage="Store Settings">
-    <SellerStubPage pageKey="SellerSettings" />
-  </SellerLayout>
-);
-export const SellerAddressesPage = () => (
-  <SellerLayout currentPage="Addresses">
-    <SellerStubPage pageKey="Addresses" />
-  </SellerLayout>
-);
+export const SellerInventoryPage = () => <SellerStubPage pageKey="SellerInventory" />;
+export const SellerOrdersPage = () => <SellerStubPage pageKey="SellerOrders" />;
+export const SellerEarningsPage = () => <SellerStubPage pageKey="SellerEarnings" />;
+export const SellerReviewsPage = () => <SellerStubPage pageKey="SellerReviews" />;
+export const SellerAnalyticsPage = () => <SellerStubPage pageKey="SellerAnalytics" />;
+export const SellerSettingsPage = () => <SellerStubPage pageKey="SellerSettings" />;
+export const SellerAddressesPage = () => <SellerStubPage pageKey="Addresses" />;

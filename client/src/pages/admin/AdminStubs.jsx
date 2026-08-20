@@ -1,5 +1,5 @@
+
 const stubPages = {
-  SellerApplications: { title: 'Seller Applications', icon: 'assignment', desc: 'Review and manage seller onboarding requests.' },
   Users:              { title: 'Users', icon: 'group', desc: 'View and manage all registered buyers.' },
   Sellers:            { title: 'Sellers', icon: 'store', desc: 'Manage all approved sellers on the platform.' },
   AdminProducts:      { title: 'Products', icon: 'inventory_2', desc: 'Browse and moderate all listed products.' },
@@ -23,10 +23,14 @@ function AdminStubPage({ pageKey }) {
   );
 }
 
-export const SellerApplicationsPage = () => <AdminStubPage pageKey="SellerApplications" />;
+// Real implementation
+export { default as SellerApplicationsPage } from './SellerApplicationsPage';
+
+// Stubs
 export const UsersPage = () => <AdminStubPage pageKey="Users" />;
 export const SellersPage = () => <AdminStubPage pageKey="Sellers" />;
 export const AdminProductsPage = () => <AdminStubPage pageKey="AdminProducts" />;
 export const AdminCategoriesPage = () => <AdminStubPage pageKey="AdminCategories" />;
-export const AdminOrdersPage = () => <AdminStubPage pageKey="AdminOrders" />;
+export { default as AdminOrdersPage } from './AdminOrdersPage';
 export const ReportsPage = () => <AdminStubPage pageKey="Reports" />;
+
