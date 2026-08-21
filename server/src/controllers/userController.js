@@ -44,6 +44,7 @@ export const addAddress = async (req, res, next) => {
       country,
       location,
       isDefault,
+      deliveryInstructions,
     } = req.body;
 
     // Validate required fields
@@ -102,6 +103,7 @@ export const addAddress = async (req, res, next) => {
       state,
       postalCode,
       country: country || "India",
+      deliveryInstructions: deliveryInstructions || "",
       location: location || {},
       isDefault: isDefault || false,
       createdAt: new Date(),
@@ -140,6 +142,7 @@ export const updateAddress = async (req, res, next) => {
       country,
       location,
       isDefault,
+      deliveryInstructions,
     } = req.body;
 
     // Validate required fields
@@ -201,6 +204,10 @@ export const updateAddress = async (req, res, next) => {
       state: state || user.addresses[addressIndex].state,
       postalCode: postalCode || user.addresses[addressIndex].postalCode,
       country: country || user.addresses[addressIndex].country,
+      deliveryInstructions:
+        deliveryInstructions !== undefined
+          ? deliveryInstructions
+          : user.addresses[addressIndex].deliveryInstructions,
       location: location || user.addresses[addressIndex].location,
       isDefault:
         isDefault !== undefined
@@ -328,3 +335,77 @@ export const getDefaultAddress = async (req, res, next) => {
     next(error);
   }
 };
+
+/**
+ * POST /api/users/addresses/geocode
+ * Reverse geocode coordinates to get address details
+ */
+export const reverseGeocodeAddress = async (req, res, next) => {
+  try {
+    const { latitude, longitude } = req.body;
+    
+    if (!latitude || !longitude) {
+      return next(new ApiError("Latitude and longitude are required", 400));
+    }
+    
+    const apiKey = process.env.GOOGLE_MAPS_API_KEY;
+    if (!apiKey) {
+      return next(new ApiError("Geocoding service is not configured (Missing API Key)", 500));
+    }
+    
+    const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=${apiKey}`;
+    
+    const response = await fetch(url);
+    const data = await response.json();
+    
+    if (data.status !== "OK" || !data.results || data.results.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "Address could not be determined from these coordinates."
+      });
+    }
+    
+    // Parse Google Maps Geocoding API response
+    const addressComponents = data.results[0].address_components;
+    
+    let building = "";
+    let street = "";
+    let neighborhood = "";
+    let city = "";
+    let state = "";
+    let postalCode = "";
+    let country = "";
+    
+    addressComponents.forEach(component => {
+      const types = component.types;
+      if (types.includes("street_number")) building = component.long_name;
+      else if (types.includes("route")) street = component.long_name;
+      else if (types.includes("sublocality") || types.includes("neighborhood")) neighborhood = component.long_name;
+      else if (types.includes("locality") || types.includes("administrative_area_level_2")) city = component.long_name;
+      else if (types.includes("administrative_area_level_1")) state = component.long_name;
+      else if (types.includes("postal_code")) postalCode = component.long_name;
+      else if (types.includes("country")) country = component.long_name;
+    });
+    
+    let addressLine1 = "";
+    if (building && street) addressLine1 = `${building}, ${street}`;
+    else if (street) addressLine1 = street;
+    else if (neighborhood) addressLine1 = neighborhood;
+    
+    res.status(200).json({
+      success: true,
+      data: {
+        formattedAddress: data.results[0].formatted_address,
+        addressLine1,
+        addressLine2: neighborhood && addressLine1 !== neighborhood ? neighborhood : "",
+        city,
+        state,
+        postalCode,
+        country
+      }
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+

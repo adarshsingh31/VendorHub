@@ -36,5 +36,9 @@ const upload = multer({
 });
 
 export const uploadProductImages = upload.array("images", 5);
+export const uploadStoreImages = upload.fields([
+  { name: "logo", maxCount: 1 },
+  { name: "banner", maxCount: 1 }
+]);
 
 export default uploadProductImages;

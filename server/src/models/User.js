@@ -41,6 +41,17 @@ const userSchema = new mongoose.Schema(
       enum: ["buyer", "seller", "admin"],
       default: "buyer",
     },
+    // Admin-managed account status — suspended users cannot place orders
+    status: {
+      type: String,
+      enum: ["active", "suspended"],
+      default: "active",
+    },
+    // Optional top-level phone number (separate from address phones)
+    phone: {
+      type: String,
+      default: null,
+    },
     resetPasswordToken: {
       type: String,
     },
@@ -93,6 +104,11 @@ const userSchema = new mongoose.Schema(
           type: String,
           default: "India",
         },
+        deliveryInstructions: {
+          type: String,
+          default: "",
+          trim: true,
+        },
         location: {
           latitude: {
             type: Number,
@@ -116,6 +132,10 @@ const userSchema = new mongoose.Schema(
     timestamps: true,
   },
 );
+
+// Compound indexes for common query patterns
+userSchema.index({ role: 1, status: 1 });   // Admin user filtering
+userSchema.index({ role: 1, createdAt: -1 }); // New users dashboard
 
 const User = mongoose.model("User", userSchema);
 

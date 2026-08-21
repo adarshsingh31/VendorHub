@@ -66,4 +66,23 @@ const protect = (req, res, next) => {
   }
 };
 
+/**
+ * adminOnly — Role-Guard Middleware
+ *
+ * Must be used AFTER the `protect` middleware so that req.user is populated.
+ * Returns 403 Forbidden if the authenticated user is not an admin.
+ *
+ * Usage:
+ *   router.get('/admin/route', protect, adminOnly, handler)
+ */
+export const adminOnly = (req, res, next) => {
+  if (req.user?.role !== "admin") {
+    return res.status(403).json({
+      success: false,
+      message: "Access denied. Admin privileges required.",
+    });
+  }
+  next();
+};
+
 export default protect;

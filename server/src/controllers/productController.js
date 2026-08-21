@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
 import Product from "../models/Product.js";
 import cloudinary, { hasCloudinaryConfig } from "../config/cloudinary.js";
+import StoreProfile from "../models/StoreProfile.js";
 
 const uploadImageToCloudinary = async (file) => {
   if (!file || !file.buffer) {
@@ -207,9 +208,18 @@ export const getProductById = async (req, res) => {
       });
     }
 
+    const storeProfile = await StoreProfile.findOne({ seller: product.seller._id });
+
+    // Attach store profile info or just return it side-by-side
+    // We return it side-by-side to avoid mutating mongoose document directly
+    const productObj = product.toObject();
+    if (storeProfile) {
+      productObj.storeProfile = storeProfile;
+    }
+
     return res.status(200).json({
       success: true,
-      product,
+      product: productObj,
     });
   } catch (error) {
     console.error("Get Product By ID Error:", error);
@@ -393,9 +403,68 @@ export const updateProduct = async (req, res) => {
   }
 };
 
+export const getAllProducts = async (req, res) => {
+  try {
+    const {
+      search,
+      category,
+      minPrice,
+      maxPrice,
+      sort,
+      page = 1,
+      limit = 12,
+    } = req.query;
+
+    let query = { status: "active" };
+
+    if (search) {
+      query.name = { $regex: search, $options: "i" };
+    }
+
+    if (category) {
+      query.category = category;
+    }
+
+    if (minPrice || maxPrice) {
+      query.price = {};
+      if (minPrice) query.price.$gte = Number(minPrice);
+      if (maxPrice) query.price.$lte = Number(maxPrice);
+    }
+
+    let sortOption = { createdAt: -1 }; // default Newest
+    if (sort === "price_asc") sortOption = { price: 1 };
+    if (sort === "price_desc") sortOption = { price: -1 };
+
+    const skip = (Number(page) - 1) * Number(limit);
+
+    const products = await Product.find(query)
+      .populate("seller", "name")
+      .sort(sortOption)
+      .skip(skip)
+      .limit(Number(limit));
+
+    const total = await Product.countDocuments(query);
+
+    return res.status(200).json({
+      success: true,
+      products,
+      totalPages: Math.ceil(total / Number(limit)),
+      currentPage: Number(page),
+      totalProducts: total,
+    });
+  } catch (error) {
+    console.error("Get All Products Error:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Server error while fetching products",
+    });
+  }
+};
+
 export default {
   createProduct,
   getSellerProducts,
   getProductById,
   updateProduct,
+  getAllProducts,
 };

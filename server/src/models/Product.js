@@ -54,6 +54,13 @@ const productSchema = new mongoose.Schema(
       default: 0,
     },
 
+    lowStockThreshold: {
+      type: Number,
+      required: true,
+      min: 0,
+      default: 10,
+    },
+
     sku: {
       type: String,
       trim: true,
@@ -63,7 +70,7 @@ const productSchema = new mongoose.Schema(
 
     status: {
       type: String,
-      enum: ["draft", "active"],
+      enum: ["draft", "active", "inactive", "blocked"],
       default: "active",
     },
   },
@@ -71,5 +78,11 @@ const productSchema = new mongoose.Schema(
     timestamps: true,
   },
 );
+
+// Compound indexes for common query patterns
+productSchema.index({ seller: 1, status: 1 });           // Seller product listing
+productSchema.index({ category: 1, status: 1 });          // Category browsing
+productSchema.index({ status: 1, createdAt: -1 });        // Admin product listing
+productSchema.index({ name: "text", description: "text" }); // Full-text search
 
 export default mongoose.model("Product", productSchema);
