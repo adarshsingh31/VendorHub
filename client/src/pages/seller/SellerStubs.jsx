@@ -1161,7 +1161,7 @@ export function EditProductPage() {
 }
 
 export const SellerInventoryPage = () => <SellerStubPage pageKey="SellerInventory" />;
-export const SellerOrdersPage = () => <SellerStubPage pageKey="SellerOrders" />;
+
 export const SellerEarningsPage = () => <SellerStubPage pageKey="SellerEarnings" />;
 export const SellerReviewsPage = () => <SellerStubPage pageKey="SellerReviews" />;
 export const SellerAnalyticsPage = () => <SellerStubPage pageKey="SellerAnalytics" />;

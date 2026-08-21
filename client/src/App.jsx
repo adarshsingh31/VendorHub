@@ -25,17 +25,23 @@ import {
 
 // Seller pages
 import SellerDashboard from "./pages/seller/SellerDashboard";
+import SellerOrders from "./pages/seller/SellerOrders";
+import SellerOrderDetails from "./pages/seller/SellerOrderDetails";
+import ProductSalesDetails from "./pages/seller/ProductSalesDetails";
 import {
   SellerProductsPage,
   AddProductPage,
   EditProductPage,
-  SellerInventoryPage,
-  SellerOrdersPage,
   SellerEarningsPage,
   SellerReviewsPage,
   SellerAnalyticsPage,
   SellerSettingsPage,
 } from "./pages/seller/SellerStubs";
+import SellerInventory from "./pages/seller/SellerInventory";
+import SellerEarnings from "./pages/seller/SellerEarnings";
+import SellerAnalytics from "./pages/seller/SellerAnalytics";
+import SellerReviews from "./pages/seller/SellerReviews";
+import SellerStoreSettings from "./pages/seller/SellerStoreSettings";
 
 // Buyer pages
 import BuyerDashboard from "./pages/buyer/BuyerDashboard";
@@ -166,7 +172,7 @@ function App() {
           path="/seller/inventory"
           element={
             <ProtectedRoute allowedRole="seller">
-              <SellerInventoryPage />
+              <SellerInventory />
             </ProtectedRoute>
           }
         />
@@ -174,7 +180,23 @@ function App() {
           path="/seller/orders"
           element={
             <ProtectedRoute allowedRole="seller">
-              <SellerOrdersPage />
+              <SellerOrders />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/seller/orders/product/:productId"
+          element={
+            <ProtectedRoute allowedRole="seller">
+              <ProductSalesDetails />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/seller/orders/:id"
+          element={
+            <ProtectedRoute allowedRole="seller">
+              <SellerOrderDetails />
             </ProtectedRoute>
           }
         />
@@ -182,7 +204,7 @@ function App() {
           path="/seller/earnings"
           element={
             <ProtectedRoute allowedRole="seller">
-              <SellerEarningsPage />
+              <SellerEarnings />
             </ProtectedRoute>
           }
         />
@@ -190,7 +212,7 @@ function App() {
           path="/seller/reviews"
           element={
             <ProtectedRoute allowedRole="seller">
-              <SellerReviewsPage />
+              <SellerReviews />
             </ProtectedRoute>
           }
         />
@@ -198,7 +220,7 @@ function App() {
           path="/seller/analytics"
           element={
             <ProtectedRoute allowedRole="seller">
-              <SellerAnalyticsPage />
+              <SellerAnalytics />
             </ProtectedRoute>
           }
         />
@@ -206,7 +228,7 @@ function App() {
           path="/seller/settings"
           element={
             <ProtectedRoute allowedRole="seller">
-              <SellerSettingsPage />
+              <SellerStoreSettings />
             </ProtectedRoute>
           }
         />

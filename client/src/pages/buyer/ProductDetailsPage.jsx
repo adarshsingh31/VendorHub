@@ -159,8 +159,12 @@ export default function ProductDetailsPage() {
 
             <div className="flex items-center flex-wrap gap-3 mb-6 pb-6 border-b" style={{ borderColor: C.border }}>
               <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm bg-gray-50 border" style={{ borderColor: C.border, color: C.navyMed }}>
-                <Store size={15} />
-                <span className="font-semibold">{product.seller?.name || "Unknown Store"}</span>
+                {product.storeProfile?.storeLogo ? (
+                  <img src={product.storeProfile.storeLogo} alt="Store Logo" className="w-5 h-5 rounded-full object-cover" />
+                ) : (
+                  <Store size={15} />
+                )}
+                <span className="font-semibold">{product.storeProfile?.storeName || product.seller?.name || "Unknown Store"}</span>
               </div>
               {product.stock > 0 ? (
                 <div className="text-sm font-semibold flex items-center gap-1 text-green-600">
@@ -210,14 +214,20 @@ export default function ProductDetailsPage() {
               </div>
 
               {/* Add to cart */}
-              <button
-                disabled={cartPending || product.stock === 0}
-                onClick={handleAddToCart}
-                className="flex-1 md:flex-none px-6 py-3 rounded-xl font-bold text-sm flex items-center justify-center gap-2 hover:opacity-90 transition-opacity"
-                style={{ background: inCart ? C.orangeSofter : C.orange, color: C.navyDark, opacity: product.stock === 0 ? 0.5 : 1 }}
-              >
-                {cartPending ? <Loader2 size={18} className="animate-spin" /> : inCart ? <><Check size={18} /> In Cart ({cartQty})</> : <><ShoppingCart size={18} /> Add to Cart</>}
-              </button>
+              {product.storeProfile?.storeStatus === "closed" ? (
+                <div className="flex-1 md:flex-none px-6 py-3 rounded-xl font-bold text-sm flex items-center justify-center gap-2 bg-red-50 text-red-600 border border-red-200">
+                  <AlertCircle size={18} /> Store Closed
+                </div>
+              ) : (
+                <button
+                  disabled={cartPending || product.stock === 0}
+                  onClick={handleAddToCart}
+                  className="flex-1 md:flex-none px-6 py-3 rounded-xl font-bold text-sm flex items-center justify-center gap-2 hover:opacity-90 transition-opacity"
+                  style={{ background: inCart ? C.orangeSofter : C.orange, color: C.navyDark, opacity: product.stock === 0 ? 0.5 : 1 }}
+                >
+                  {cartPending ? <Loader2 size={18} className="animate-spin" /> : inCart ? <><Check size={18} /> In Cart ({cartQty})</> : <><ShoppingCart size={18} /> Add to Cart</>}
+                </button>
+              )}
 
               {/* Wishlist */}
               <button
@@ -243,6 +253,45 @@ export default function ProductDetailsPage() {
           </div>
         </div>
       </div>
+
+      {/* Store Policies Section */}
+      {product.storeProfile && (
+        <div className="mt-8 bg-white rounded-2xl border overflow-hidden p-6 md:p-10" style={{ borderColor: C.border }}>
+          <h2 className="text-2xl font-bold mb-6">Store Policies & Info</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            {product.storeProfile.returnPolicy && (
+              <div>
+                <h3 className="font-bold text-gray-900 mb-2">Return Policy</h3>
+                <p className="text-sm text-gray-600 whitespace-pre-line">{product.storeProfile.returnPolicy}</p>
+              </div>
+            )}
+            {product.storeProfile.refundPolicy && (
+              <div>
+                <h3 className="font-bold text-gray-900 mb-2">Refund Policy</h3>
+                <p className="text-sm text-gray-600 whitespace-pre-line">{product.storeProfile.refundPolicy}</p>
+              </div>
+            )}
+            {product.storeProfile.shippingPolicy && (
+              <div>
+                <h3 className="font-bold text-gray-900 mb-2">Shipping Policy</h3>
+                <p className="text-sm text-gray-600 whitespace-pre-line">{product.storeProfile.shippingPolicy}</p>
+              </div>
+            )}
+            {product.storeProfile.cancellationPolicy && (
+              <div>
+                <h3 className="font-bold text-gray-900 mb-2">Cancellation Policy</h3>
+                <p className="text-sm text-gray-600 whitespace-pre-line">{product.storeProfile.cancellationPolicy}</p>
+              </div>
+            )}
+            {product.storeProfile.storeClosedMessage && product.storeProfile.storeStatus === "closed" && (
+              <div className="col-span-1 md:col-span-2 bg-yellow-50 p-4 rounded-xl border border-yellow-200">
+                <h3 className="font-bold text-yellow-800 mb-1">Message from Seller</h3>
+                <p className="text-sm text-yellow-700">{product.storeProfile.storeClosedMessage}</p>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
