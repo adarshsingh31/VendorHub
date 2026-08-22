@@ -25,12 +25,12 @@ function AdminStubPage({ pageKey }) {
 
 // Real implementation
 export { default as SellerApplicationsPage } from './SellerApplicationsPage';
+export { default as ReportsPage } from './AdminReportsPage';
 
 // Stubs
-export const UsersPage = () => <AdminStubPage pageKey="Users" />;
-export const SellersPage = () => <AdminStubPage pageKey="Sellers" />;
-export const AdminProductsPage = () => <AdminStubPage pageKey="AdminProducts" />;
-export const AdminCategoriesPage = () => <AdminStubPage pageKey="AdminCategories" />;
+export { default as UsersPage } from './AdminUsersPage';
+export { default as SellersPage } from './AdminSellersPage';
+export { default as AdminProductsPage } from './AdminProductsPage';
+export { default as AdminCategoriesPage } from './AdminCategoriesPage';
 export { default as AdminOrdersPage } from './AdminOrdersPage';
-export const ReportsPage = () => <AdminStubPage pageKey="Reports" />;
 

@@ -7,14 +7,15 @@ import DashboardLayout from '../components/layout/DashboardLayout';
  *
  * Props:
  *   allowedRole  — 'buyer' | 'seller' | 'admin' | undefined (any authenticated user)
+ *   noLayout     — if true, skips the DashboardLayout wrapper (for pages with own layout)
  *   children     — the route element to render
  *
  * Behaviour:
  *   1. Not authenticated → redirect to /login
  *   2. Authenticated but wrong role → redirect to the user's own dashboard
- *   3. Correct role → render children inside DashboardLayout
+ *   3. Correct role → render children (inside DashboardLayout unless noLayout=true)
  */
-export default function ProtectedRoute({ allowedRole, children }) {
+export default function ProtectedRoute({ allowedRole, noLayout, children }) {
   const { isAuthenticated, role } = useAuth();
   const location = useLocation();
 
@@ -28,9 +29,14 @@ export default function ProtectedRoute({ allowedRole, children }) {
     return <Navigate to={dashboardMap[role] || '/login'} replace />;
   }
 
+  if (noLayout) {
+    return children;
+  }
+
   return (
     <DashboardLayout>
       {children}
     </DashboardLayout>
   );
 }
+

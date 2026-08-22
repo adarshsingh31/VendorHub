@@ -13,6 +13,7 @@ const NAV_ITEMS = {
     { label: 'Categories', icon: 'category', to: '/admin/categories' },
     { label: 'Orders', icon: 'shopping_cart', to: '/admin/orders' },
     { label: 'Reports', icon: 'bar_chart', to: '/admin/reports' },
+    { label: 'Settings', icon: 'manage_accounts', to: '/settings' },
   ],
   seller: [
     { label: 'Dashboard', icon: 'dashboard', to: '/seller' },
@@ -23,6 +24,7 @@ const NAV_ITEMS = {
     { label: 'Analytics', icon: 'monitoring', to: '/seller/analytics' },
     { label: 'Reviews', icon: 'star', to: '/seller/reviews' },
     { label: 'Store Settings', icon: 'settings', to: '/seller/settings' },
+    { label: 'Account Settings', icon: 'manage_accounts', to: '/settings' },
   ],
   buyer: [
     { label: 'Home', icon: 'home', to: '/buyer' },
@@ -32,6 +34,7 @@ const NAV_ITEMS = {
     { label: 'Wishlist', icon: 'favorite', to: '/buyer/wishlist' },
     { label: 'Addresses', icon: 'location_on', to: '/buyer/addresses' },
     { label: 'Become a Seller', icon: 'storefront', to: '/buyer/become-seller' },
+    { label: 'Account Settings', icon: 'manage_accounts', to: '/settings' },
   ],
 };
 

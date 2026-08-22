@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import Sidebar from '../common/Sidebar';
 import { useAuth } from '../../context/AuthContext';
 
@@ -53,11 +54,27 @@ export default function DashboardLayout({ children }) {
             </div>
           </div>
 
-          {/* User Profile Info */}
-          <div className="flex items-center gap-3">
+          {/* Right side: Settings + Role badge + Avatar */}
+          <div className="flex items-center gap-2">
+            {/* Settings button */}
+            <Link
+              to="/settings"
+              title="Account Settings"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-text-soft hover:text-primary hover:bg-surface-sunken transition-all duration-150"
+            >
+              <span className="material-symbols-outlined text-[18px]">manage_accounts</span>
+              <span className="hidden sm:inline">Settings</span>
+            </Link>
+
+            {/* Divider */}
+            <span className="h-5 w-px bg-border hidden sm:block" />
+
+            {/* Role portal label */}
             <span className="text-xs font-semibold text-text-muted capitalize hidden sm:inline-block">
               {role} portal
             </span>
+
+            {/* Avatar */}
             <div className="w-8 h-8 rounded-full bg-primary/20 text-primary-hover flex items-center justify-center font-bold text-sm" title={userName}>
               {userInitial}
             </div>

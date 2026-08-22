@@ -6,6 +6,7 @@ import {
   getSellerProducts,
   updateProduct,
 } from "../../services/productService";
+import api from "../../services/axiosInstance";
 import {
   Package,
   Plus,
@@ -187,9 +188,16 @@ export function AddProductPage() {
     images: [],
   });
   const [images, setImages] = useState([]);
+  const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+
+  useEffect(() => {
+    api.get("/api/categories/public")
+      .then(res => setCategories(res.data.categories || []))
+      .catch(err => console.error("Failed to load categories", err));
+  }, []);
 
   const handleChange = (event) => {
     const { name, value } = event.target;
@@ -381,29 +389,34 @@ export function AddProductPage() {
                   id="category"
                   name="category"
                   value={formData.category}
-                  onChange={handleChange}
+                  onChange={(e) => {
+                    handleChange(e);
+                    // Reset subcategory when category changes
+                    setFormData(prev => ({ ...prev, subcategory: "" }));
+                  }}
                 >
                   <option value="">Select category</option>
-                  <option value="Electronics">Electronics</option>
-                  <option value="Fashion">Fashion</option>
-                  <option value="Home & kitchen">Home &amp; kitchen</option>
-                  <option value="Beauty">Beauty</option>
-                  <option value="Grocery">Grocery</option>
-                  <option value="Toys">Toys</option>
-                  <option value="Sports">Sports</option>
-                  <option value="Books">Books</option>
+                  {categories.map(cat => (
+                    <option key={cat._id} value={cat.name}>{cat.name}</option>
+                  ))}
                 </select>
               </div>
               <div className="field">
                 <label htmlFor="subcategory">Subcategory</label>
-                <input
+                <select
                   id="subcategory"
                   name="subcategory"
-                  type="text"
                   value={formData.subcategory}
                   onChange={handleChange}
-                  placeholder="e.g. Sarees"
-                />
+                  disabled={!formData.category}
+                >
+                  <option value="">Select subcategory</option>
+                  {categories
+                    .find(c => c.name === formData.category)
+                    ?.subcategories?.map(sub => (
+                      <option key={sub._id} value={sub.name}>{sub.name}</option>
+                    ))}
+                </select>
               </div>
             </div>
 
@@ -724,6 +737,7 @@ export function EditProductPage() {
   const [loadingProduct, setLoadingProduct] = useState(true);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const [categories, setCategories] = useState([]);
   const [existingImages, setExistingImages] = useState([]);
   const [newImages, setNewImages] = useState([]);
   const [formData, setFormData] = useState({
@@ -739,6 +753,10 @@ export function EditProductPage() {
   });
 
   useEffect(() => {
+    api.get("/api/categories/public")
+      .then(res => setCategories(res.data.categories || []))
+      .catch(err => console.error("Failed to load categories", err));
+
     const fetchProduct = async () => {
       try {
         setLoadingProduct(true);
@@ -961,29 +979,34 @@ export function EditProductPage() {
                   id="category"
                   name="category"
                   value={formData.category}
-                  onChange={handleChange}
+                  onChange={(e) => {
+                    handleChange(e);
+                    // Reset subcategory when category changes
+                    setFormData(prev => ({ ...prev, subcategory: "" }));
+                  }}
                 >
                   <option value="">Select category</option>
-                  <option value="Electronics">Electronics</option>
-                  <option value="Fashion">Fashion</option>
-                  <option value="Home & kitchen">Home &amp; kitchen</option>
-                  <option value="Beauty">Beauty</option>
-                  <option value="Grocery">Grocery</option>
-                  <option value="Toys">Toys</option>
-                  <option value="Sports">Sports</option>
-                  <option value="Books">Books</option>
+                  {categories.map(cat => (
+                    <option key={cat._id} value={cat.name}>{cat.name}</option>
+                  ))}
                 </select>
               </div>
               <div className="field">
                 <label htmlFor="subcategory">Subcategory</label>
-                <input
+                <select
                   id="subcategory"
                   name="subcategory"
-                  type="text"
                   value={formData.subcategory}
                   onChange={handleChange}
-                  placeholder="e.g. Sarees"
-                />
+                  disabled={!formData.category}
+                >
+                  <option value="">Select subcategory</option>
+                  {categories
+                    .find(c => c.name === formData.category)
+                    ?.subcategories?.map(sub => (
+                      <option key={sub._id} value={sub.name}>{sub.name}</option>
+                    ))}
+                </select>
               </div>
             </div>
 

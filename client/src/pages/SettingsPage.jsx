@@ -1,8 +1,6 @@
-import { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useState } from 'react'
 import api from '../services/axiosInstance'
 import { useAuth } from '../context/AuthContext'
-import AddressManagement from '../components/AddressManagement'
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -79,7 +77,7 @@ function PasswordInput({ id, label, value, onChange, placeholder, autoComplete }
           value={value}
           onChange={onChange}
           placeholder={placeholder}
-          className="appearance-none block w-full px-4 py-3 pr-11 border border-[#c3c6d7] rounded-xl bg-white text-[#0b1c30] placeholder-[#737686] focus:outline-none focus:ring-2 focus:ring-[#004ac6] focus:border-[#004ac6] text-sm transition-all duration-150 input-glow"
+          className="appearance-none block w-full px-4 py-3 pr-11 border border-[#c3c6d7] rounded-xl bg-white text-[#0b1c30] placeholder-[#737686] focus:outline-none focus:ring-2 focus:ring-[#004ac6] focus:border-[#004ac6] text-sm transition-all duration-150"
         />
         <button
           type="button"
@@ -112,19 +110,19 @@ function StrengthMeter({ password }) {
   )
 }
 
-// ─── Set Password Section (Google-only users) ─────────────────────────────────
+// ─── Set Password Form (Google-only users) ─────────────────────────────────────
 function SetPasswordForm({ onSuccess }) {
-  const [password, setPassword]               = useState('')
-  const [confirm, setConfirm]                 = useState('')
-  const [loading, setLoading]                 = useState(false)
-  const [error, setError]                     = useState('')
+  const [password, setPassword]   = useState('')
+  const [confirm, setConfirm]     = useState('')
+  const [loading, setLoading]     = useState(false)
+  const [error, setError]         = useState('')
   const mismatch = confirm && password !== confirm
 
   const handleSubmit = async (e) => {
     e.preventDefault()
     setError('')
     if (password.length < 8) { setError('Password must be at least 8 characters.'); return }
-    if (password !== confirm) { setError('Passwords do not match.'); return }
+    if (password !== confirm)  { setError('Passwords do not match.'); return }
     setLoading(true)
     try {
       const { data } = await api.post('/api/auth/set-password', { password, confirmPassword: confirm })
@@ -163,7 +161,7 @@ function SetPasswordForm({ onSuccess }) {
           value={confirm}
           onChange={e => { setConfirm(e.target.value); if (error) setError('') }}
           placeholder="Re-enter your password"
-          className={`appearance-none block w-full px-4 py-3 border rounded-xl bg-white text-[#0b1c30] placeholder-[#737686] focus:outline-none focus:ring-2 text-sm transition-all input-glow ${
+          className={`appearance-none block w-full px-4 py-3 border rounded-xl bg-white text-[#0b1c30] placeholder-[#737686] focus:outline-none focus:ring-2 text-sm transition-all ${
             mismatch ? 'border-[#ba1a1a] focus:ring-[#ba1a1a]' : 'border-[#c3c6d7] focus:ring-[#004ac6] focus:border-[#004ac6]'
           }`}
         />
@@ -215,7 +213,7 @@ function PasswordSetSuccess() {
   )
 }
 
-// ─── Change Password Section (local / both users) ─────────────────────────────
+// ─── Change Password Form (local / both users) ─────────────────────────────────
 function ChangePasswordForm() {
   const [current, setCurrent]   = useState('')
   const [newPass, setNewPass]   = useState('')
@@ -281,7 +279,7 @@ function ChangePasswordForm() {
           value={confirm}
           onChange={e => { setConfirm(e.target.value); if (error) setError('') }}
           placeholder="Re-enter new password"
-          className={`appearance-none block w-full px-4 py-3 border rounded-xl bg-white text-[#0b1c30] placeholder-[#737686] focus:outline-none focus:ring-2 text-sm transition-all input-glow ${
+          className={`appearance-none block w-full px-4 py-3 border rounded-xl bg-white text-[#0b1c30] placeholder-[#737686] focus:outline-none focus:ring-2 text-sm transition-all ${
             mismatch ? 'border-[#ba1a1a] focus:ring-[#ba1a1a]' : 'border-[#c3c6d7] focus:ring-[#004ac6] focus:border-[#004ac6]'
           }`}
         />
@@ -303,192 +301,117 @@ function ChangePasswordForm() {
   )
 }
 
-// ─── Sidebar nav (shared shell) ────────────────────────────────────────────────
-const NAV_ITEMS = [
-  { icon: 'dashboard',      label: 'Dashboard', path: '/dashboard' },
-  { icon: 'shopping_cart',  label: 'Orders'                        },
-  { icon: 'inventory_2',    label: 'Products'                      },
-  { icon: 'group',          label: 'Customers'                     },
-  { icon: 'analytics',      label: 'Analytics'                     },
-  { icon: 'manage_accounts',label: 'Settings',  path: '/settings', active: true },
-]
-
 // ─── Main SettingsPage ─────────────────────────────────────────────────────────
 export default function SettingsPage() {
-  const navigate = useNavigate()
+  const { user: authUser, refreshUser } = useAuth()
 
-  // Read stored user profile (set by login / signup / googleAuth)
-  const [user, setUser] = useState(() => {
+  // Local copy for display; falls back to localStorage
+  const [localUser, setLocalUser] = useState(() => {
+    if (authUser) return authUser
     try { return JSON.parse(localStorage.getItem('vh_user')) || {} }
     catch { return {} }
   })
 
-  // Track whether the set-password flow has been completed this session
+  // Must be declared before any early return (Rules of Hooks)
   const [passwordSet, setPasswordSet] = useState(false)
 
-  // Redirect if not authenticated
-  useEffect(() => {
-    if (!localStorage.getItem('vh_token')) navigate('/login')
-  }, [navigate])
+  const user = authUser || localUser
 
-  const authProvider = user.authProvider || 'local'
+  const authProvider = user?.authProvider || 'local'
   const badge = PROVIDER_BADGE[authProvider] || PROVIDER_BADGE.local
+  const hasPassword = user?.hasPassword === true || passwordSet
 
   // Called by SetPasswordForm on success
-  const handlePasswordSet = (hasPassword) => {
+  const handlePasswordSet = (newHasPassword) => {
     setPasswordSet(true)
-    const updated = { ...user, hasPassword: hasPassword, authProvider: 'both' }
-    setUser(updated)
+    const updated = { ...user, hasPassword: newHasPassword, authProvider: 'both' }
+    setLocalUser(updated)
+    if (refreshUser) refreshUser(updated)
     localStorage.setItem('vh_user', JSON.stringify(updated))
   }
 
-  // Derive if user has password
-  const hasPassword = user.hasPassword === true || passwordSet
-
   return (
-    <div className="h-full min-h-screen bg-[#f8f9ff] font-[Inter,sans-serif] text-[#0b1c30] antialiased flex overflow-hidden">
+    <div className="max-w-[640px] mx-auto flex flex-col gap-8 py-2">
 
-      {/* ── Sidebar ── */}
-      <nav className="h-screen w-64 fixed left-0 top-0 pt-16 bg-white border-r border-[#c3c6d7]/20 flex flex-col gap-2 p-6 z-40 hidden md:flex shadow-[1px_0_0_0_rgba(0,0,0,0.04)]">
-        <div className="mb-6 flex items-center gap-2 px-2">
-          <span className="material-symbols-outlined text-[#004ac6] text-3xl">hub</span>
-          <div className="flex flex-col">
-            <span className="text-xl font-black text-[#004ac6] leading-tight">VendorHub</span>
-            <span className="text-xs text-[#434655] font-medium tracking-wide">Premium Merchant</span>
-          </div>
-        </div>
-        <div className="flex flex-col gap-1 w-full">
-          {NAV_ITEMS.map(item => (
-            <button
-              key={item.label}
-              onClick={() => item.path && navigate(item.path)}
-              className={`flex items-center gap-3 px-3 py-2 rounded-lg text-left w-full transition-all duration-200 ${
-                item.active
-                  ? 'text-[#004ac6] bg-[#004ac6]/10 font-bold'
-                  : 'text-[#434655] hover:text-[#0b1c30] hover:bg-[#dce9ff]'
-              }`}
-            >
-              <span className="material-symbols-outlined text-[20px]"
-                style={item.active ? { fontVariationSettings: "'FILL' 1" } : {}}>
-                {item.icon}
-              </span>
-              <span className="text-sm font-semibold">{item.label}</span>
-            </button>
-          ))}
-        </div>
-      </nav>
+      {/* ── Page Header ── */}
+      <div>
+        <h1 className="text-2xl font-bold text-[#0b1c30] tracking-tight">Account Settings</h1>
+        <p className="text-sm text-[#434655] mt-1">Manage your profile and account security.</p>
+      </div>
 
-      {/* ── Top Bar ── */}
-      <header className="fixed top-0 w-full z-50 bg-white/70 backdrop-blur-xl border-b border-[#c3c6d7]/30 shadow-sm md:pl-64">
-        <div className="flex justify-between items-center h-16 px-6 max-w-[1280px] mx-auto w-full">
-          <div className="md:hidden text-xl font-bold text-[#004ac6] flex items-center gap-2">
-            <span className="material-symbols-outlined text-3xl">hub</span>
-            <span>VendorHub</span>
-          </div>
-          <div className="hidden md:block text-lg font-semibold text-[#0b1c30]">Account Settings</div>
-          <button
-            onClick={() => {
-              const role = JSON.parse(localStorage.getItem('vh_user') || '{}')?.role
-              const map = { buyer: '/buyer', seller: '/seller', admin: '/admin' }
-              navigate(map[role] || '/buyer')
-            }}
-            className="ml-auto flex items-center gap-1.5 text-sm font-semibold text-[#434655] hover:text-[#004ac6] transition-colors"
-          >
-            <span className="material-symbols-outlined text-[18px]">arrow_back</span>
-            Back to Dashboard
-          </button>
-        </div>
-      </header>
-
-      {/* ── Main ── */}
-      <main className="flex-1 ml-0 md:ml-64 pt-24 px-4 md:px-8 pb-12 overflow-y-auto w-full">
-        <div className="max-w-[640px] mx-auto flex flex-col gap-8">
-
-          {/* Page Header */}
-          <div>
-            <h1 className="text-[32px] md:text-[40px] font-bold text-[#0b1c30] tracking-tight">Settings</h1>
-            <p className="text-lg text-[#434655] mt-1">Manage your profile and account security.</p>
-          </div>
-
-          {/* ── Profile Information ── */}
-          <SectionCard title="Profile Information" icon="account_circle">
-            <div className="flex items-center gap-5">
-              {/* Avatar */}
-              <div className="shrink-0">
-                {user.avatar ? (
-                  <img
-                    src={user.avatar}
-                    alt={user.name || 'Profile'}
-                    className="w-16 h-16 rounded-full object-cover border-2 border-[#c3c6d7]/40 shadow-sm"
-                  />
-                ) : (
-                  <div className="w-16 h-16 rounded-full bg-[#eff4ff] flex items-center justify-center shadow-sm border border-[#c3c6d7]/30">
-                    <span className="material-symbols-outlined text-[32px] text-[#004ac6]"
-                      style={{ fontVariationSettings: "'FILL' 1" }}>
-                      account_circle
-                    </span>
-                  </div>
-                )}
-              </div>
-
-              {/* Info */}
-              <div className="flex flex-col gap-1.5 flex-1 min-w-0">
-                <p className="font-bold text-[#0b1c30] text-lg leading-tight truncate">
-                  {user.name || 'Unknown User'}
-                </p>
-                <p className="text-sm text-[#434655] truncate">{user.email || '—'}</p>
-                {/* Auth provider badge */}
-                <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold w-fit ${badge.color}`}>
-                  <span className="material-symbols-outlined text-[14px]"
-                    style={{ fontVariationSettings: "'FILL' 1" }}>
-                    {badge.icon}
-                  </span>
-                  {badge.label}
+      {/* ── Profile Information ── */}
+      <SectionCard title="Profile Information" icon="account_circle">
+        <div className="flex items-center gap-5">
+          {/* Avatar */}
+          <div className="shrink-0">
+            {user?.avatar ? (
+              <img
+                src={user.avatar}
+                alt={user?.name || 'Profile'}
+                referrerPolicy="no-referrer"
+                className="w-16 h-16 rounded-full object-cover border-2 border-[#c3c6d7]/40 shadow-sm"
+              />
+            ) : (
+              <div className="w-16 h-16 rounded-full bg-[#eff4ff] flex items-center justify-center shadow-sm border border-[#c3c6d7]/30">
+                <span className="material-symbols-outlined text-[32px] text-[#004ac6]"
+                  style={{ fontVariationSettings: "'FILL' 1" }}>
+                  account_circle
                 </span>
               </div>
-            </div>
-          </SectionCard>
-
-          {/* ── Password Settings ── */}
-          <SectionCard title="Password Settings" icon="lock">
-
-            {/* Case 1: Just set the password in this session */}
-            {passwordSet ? (
-              <PasswordSetSuccess />
-            ) : 
-            /* Case 2: Does not have a password yet */
-            !hasPassword ? (
-              <div className="flex flex-col gap-5">
-                <div className="flex items-start gap-3 p-4 bg-[#eff4ff] border border-[#004ac6]/20 rounded-xl">
-                  <span className="material-symbols-outlined text-[#004ac6] text-[20px] mt-0.5 shrink-0"
-                    style={{ fontVariationSettings: "'FILL' 1" }}>info</span>
-                  <p className="text-sm text-[#0b1c30]">
-                    You signed in with Google. Set a password to also log in using your email and password.
-                  </p>
-                </div>
-                <div>
-                  <p className="text-sm font-bold text-[#0b1c30] mb-4">Set Password</p>
-                  <SetPasswordForm onSuccess={handlePasswordSet} />
-                </div>
-              </div>
-            ) : 
-            /* Case 3: Already has a password */
-            (
-              <div className="flex flex-col gap-4">
-                <p className="text-sm font-bold text-[#0b1c30]">Change Password</p>
-                <ChangePasswordForm />
-              </div>
             )}
+          </div>
 
-          </SectionCard>
-
-          {/* ── Address Management ── */}
-          <SectionCard title="Address Management" icon="home_work">
-            <AddressManagement />
-          </SectionCard>
-
+          {/* Info */}
+          <div className="flex flex-col gap-1.5 flex-1 min-w-0">
+            <p className="font-bold text-[#0b1c30] text-lg leading-tight truncate">
+              {user?.name || 'Unknown User'}
+            </p>
+            <p className="text-sm text-[#434655] truncate">{user?.email || '—'}</p>
+            {/* Auth provider badge */}
+            <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold w-fit ${badge.color}`}>
+              <span className="material-symbols-outlined text-[14px]"
+                style={{ fontVariationSettings: "'FILL' 1" }}>
+                {badge.icon}
+              </span>
+              {badge.label}
+            </span>
+          </div>
         </div>
-      </main>
+      </SectionCard>
+
+      {/* ── Password Settings ── */}
+      <SectionCard title="Password Settings" icon="lock">
+
+        {/* Case 1: Just set the password in this session */}
+        {passwordSet ? (
+          <PasswordSetSuccess />
+        ) :
+        /* Case 2: Does not have a password yet (Google-only user) */
+        !hasPassword ? (
+          <div className="flex flex-col gap-5">
+            <div className="flex items-start gap-3 p-4 bg-[#eff4ff] border border-[#004ac6]/20 rounded-xl">
+              <span className="material-symbols-outlined text-[#004ac6] text-[20px] mt-0.5 shrink-0"
+                style={{ fontVariationSettings: "'FILL' 1" }}>info</span>
+              <p className="text-sm text-[#0b1c30]">
+                You signed in with Google. Set a password to also log in using your email and password.
+              </p>
+            </div>
+            <div>
+              <p className="text-sm font-bold text-[#0b1c30] mb-4">Set Password</p>
+              <SetPasswordForm onSuccess={handlePasswordSet} />
+            </div>
+          </div>
+        ) :
+        /* Case 3: Already has a password */
+        (
+          <div className="flex flex-col gap-4">
+            <p className="text-sm font-bold text-[#0b1c30]">Change Password</p>
+            <ChangePasswordForm />
+          </div>
+        )}
+
+      </SectionCard>
+
     </div>
   )
 }
