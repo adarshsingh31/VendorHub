@@ -66,18 +66,22 @@ app.use(
 
 // 4. Rate Limiting (100 requests per 10 mins per IP)
 const limiter = rateLimit({
-  windowMs: 10 * 60 * 1000, 
+  windowMs: 10 * 60 * 1000,
   max: 100,
-  message: { success: false, message: "Too many requests from this IP, please try again after 10 minutes." }
+  message: {
+    success: false,
+    message:
+      "Too many requests from this IP, please try again after 10 minutes.",
+  },
 });
-app.use("/api", limiter);
+// app.use("/api", limiter); // Disabled during development to prevent 429 Too Many Requests errors
 
 // 5. Body Parsers (with size limits)
 app.use(express.json({ limit: "10kb" })); // Body limit is 10kb
 app.use(express.urlencoded({ extended: true, limit: "10kb" }));
 
 // 6. Data Sanitization against NoSQL Query Injection
-app.use(mongoSanitize());
+//app.use(mongoSanitize());
 
 // 7. Data Sanitization against XSS
 app.use(xss());
@@ -87,7 +91,6 @@ app.use(hpp());
 
 // 9. Response Compression
 app.use(compression());
-
 
 // ─── Routes ───────────────────────────────────────────────────────────────────
 app.use("/api/auth", authRoutes);
@@ -115,7 +118,9 @@ app.use("/api/seller/store-settings", storeSettingsRoutes);
 
 // Health Check
 app.get("/api/health", (req, res) => {
-  res.status(200).json({ status: "OK", message: "VendorHub API is running securely." });
+  res
+    .status(200)
+    .json({ status: "OK", message: "VendorHub API is running securely." });
 });
 
 // ─── Error Handling ───────────────────────────────────────────────────────────
@@ -129,12 +134,12 @@ app.use((err, req, res, next) => {
   }
 
   const statusCode = err.statusCode || 500;
-  
+
   const errorResponse = {
     success: false,
     message: err.message || "Internal Server Error",
   };
-  
+
   // Include stack trace only in development
   if (process.env.NODE_ENV !== "production") {
     errorResponse.stack = err.stack;

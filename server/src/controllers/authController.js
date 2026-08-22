@@ -83,8 +83,10 @@ export const signup = async (req, res) => {
         id: user._id,
         name: user.name,
         email: user.email,
+        avatar: user.avatar,
         role: user.role,
         hasPassword: !!user.password,
+        authProvider: user.authProvider,
       },
     });
   } catch (error) {
@@ -151,8 +153,10 @@ export const login = async (req, res) => {
         id: user._id,
         name: user.name,
         email: user.email,
+        avatar: user.avatar,
         role: user.role,
         hasPassword: !!user.password,
+        authProvider: user.authProvider,
       },
     });
   } catch (error) {
@@ -249,6 +253,7 @@ export const googleAuth = async (req, res) => {
         avatar: user.avatar,
         role: user.role,
         hasPassword: !!user.password,
+        authProvider: user.authProvider,
       },
     });
   } catch (error) {
