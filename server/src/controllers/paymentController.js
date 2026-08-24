@@ -1,39 +1,26 @@
 import Razorpay from "razorpay";
 import crypto from "crypto";
+
 import Cart from "../models/Cart.js";
 import Order from "../models/Order.js";
 import Product from "../models/Product.js";
 import InventoryTransaction from "../models/InventoryTransaction.js";
 import StoreProfile from "../models/StoreProfile.js";
 
-// ─── Razorpay SDK instance (lazy) ────────────────────────────────────────────
-// Initialised on first use rather than at module load time.
-// This prevents a missing RAZORPAY_KEY_ID from crashing the entire server
-// before any request is even received.
-let _razorpay = null;
-const getRazorpay = () => {
-  if (!_razorpay) {
-    if (!process.env.RAZORPAY_KEY_ID || !process.env.RAZORPAY_KEY_SECRET) {
-      throw new Error(
-        "Razorpay keys are not configured. Set RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET in .env"
-      );
-    }
-    _razorpay = new Razorpay({
-      key_id: process.env.RAZORPAY_KEY_ID,
-      key_secret: process.env.RAZORPAY_KEY_SECRET,
-    });
-  }
-  return _razorpay;
-};
+// ─── Razorpay SDK instance ────────────────────────────────────────────────
+const razorpay = new Razorpay({
+  key_id: process.env.RAZORPAY_KEY_ID,
+  key_secret: process.env.RAZORPAY_KEY_SECRET,
+});
 
-const DELIVERY_FEE = 49; // ₹49 flat delivery fee
+const DELIVERY_FEE = 49;
 
-// ─── Helpers ──────────────────────────────────────────────────────────────────
+// ─── Helpers ──────────────────────────────────────────────────────────────
 
 /**
- * Fetch the authenticated user's cart, re-fetch product prices from the DB,
- * and compute the server-authoritative order total.
- * This ensures the frontend cannot manipulate the amount.
+ * Fetch authenticated user's cart,
+ * refresh product prices from DB,
+ * and calculate server-authoritative total.
  */
 async function getCartWithFreshPrices(userId) {
   const cart = await Cart.findOne({ user: userId }).populate({
@@ -46,36 +33,62 @@ async function getCartWithFreshPrices(userId) {
   }
 
   // Fetch unique sellers
-  const sellerIds = [...new Set(cart.items.map(item => item.product?.seller?.toString()).filter(Boolean))];
-  const storeProfiles = await StoreProfile.find({ seller: { $in: sellerIds } });
-  const storeMap = new Map();
-  storeProfiles.forEach(profile => storeMap.set(profile.seller.toString(), profile));
+  const sellerIds = [
+    ...new Set(
+      cart.items
+        .map((item) => item.product?.seller?.toString())
+        .filter(Boolean),
+    ),
+  ];
 
-  // Rebuild items using live product prices (ignore cart.items[].price)
+  const storeProfiles = await StoreProfile.find({
+    seller: { $in: sellerIds },
+  });
+
+  const storeMap = new Map();
+
+  storeProfiles.forEach((profile) => {
+    storeMap.set(profile.seller.toString(), profile);
+  });
+
+  // Rebuild items using live product prices
   const items = [];
   let subtotal = 0;
-  
-  // Track seller subtotals to calculate shipping later
+
+  // Track seller subtotals
   const sellerSubtotals = new Map();
 
   for (const item of cart.items) {
     const product = item.product;
-    if (!product || product.status !== "active") continue;
-    if (product.stock < item.quantity) continue; // skip out-of-stock items
-    
+
+    // Product unavailable
+    if (!product || product.status !== "active") {
+      continue;
+    }
+
+    // Not enough stock
+    if (product.stock < item.quantity) {
+      continue;
+    }
+
     const sellerIdStr = product.seller.toString();
+
     const storeProfile = storeMap.get(sellerIdStr);
-    
-    // Block purchasing from closed stores
+
+    // Store is closed
     if (storeProfile && storeProfile.storeStatus === "closed") {
       throw new Error(`The store for ${product.name} is currently closed.`);
     }
 
     const lineTotal = product.price * item.quantity;
+
     subtotal += lineTotal;
-    
-    sellerSubtotals.set(sellerIdStr, (sellerSubtotals.get(sellerIdStr) || 0) + lineTotal);
-    
+
+    sellerSubtotals.set(
+      sellerIdStr,
+      (sellerSubtotals.get(sellerIdStr) || 0) + lineTotal,
+    );
+
     items.push({
       product: product._id,
       name: product.name,
@@ -86,44 +99,51 @@ async function getCartWithFreshPrices(userId) {
     });
   }
 
-  if (items.length === 0) return null;
+  // Nothing purchasable
+  if (items.length === 0) {
+    return null;
+  }
 
-  // Calculate delivery fee dynamically based on seller profiles
+  // Calculate delivery fee
   let deliveryFee = 0;
+
   for (const [sellerId, sellerSubtotal] of sellerSubtotals.entries()) {
     const profile = storeMap.get(sellerId);
-    if (!profile || !profile.shippingEnabled) continue;
-    
-    // Default fallback fee if profile exists but fee isn't set
-    const fee = profile.shippingFee ?? 49;
-    const threshold = profile.freeShippingThreshold || 0;
-    
-    if (threshold > 0 && sellerSubtotal >= threshold) {
-      // Free shipping applies for this seller
+
+    if (!profile || !profile.shippingEnabled) {
       continue;
     }
-    
+
+    const fee = profile.shippingFee ?? DELIVERY_FEE;
+    const threshold = profile.freeShippingThreshold || 0;
+
+    // Free shipping
+    if (threshold > 0 && sellerSubtotal >= threshold) {
+      continue;
+    }
+
     deliveryFee += fee;
   }
 
   const totalAmount = subtotal + deliveryFee;
 
-  return { items, subtotal, deliveryFee, totalAmount };
+  return {
+    items,
+    subtotal,
+    deliveryFee,
+    totalAmount,
+  };
 }
 
-// ─── Controllers ──────────────────────────────────────────────────────────────
+// ─── CREATE RAZORPAY ORDER ────────────────────────────────────────────────
 
 /**
  * POST /api/payment/create-order
- *
- * 1. Fetches cart and recomputes amount from live product prices (server-side)
- * 2. Creates a Razorpay order
- * 3. Returns razorpayOrderId, amount (₹), currency, and the PUBLIC key_id
- *    — RAZORPAY_KEY_SECRET is never included in the response
  */
 export const createOrder = async (req, res) => {
   try {
     let cartData;
+
     try {
       cartData = await getCartWithFreshPrices(req.user.id);
     } catch (err) {
@@ -133,6 +153,7 @@ export const createOrder = async (req, res) => {
       });
     }
 
+    // Cart empty / unavailable
     if (!cartData) {
       return res.status(400).json({
         success: false,
@@ -143,9 +164,18 @@ export const createOrder = async (req, res) => {
 
     const { totalAmount } = cartData;
 
-    // Razorpay requires amount in paise (1 ₹ = 100 paise)
+    // Validate amount
+    if (!totalAmount || totalAmount <= 0) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid cart amount.",
+      });
+    }
+
+    // Razorpay requires amount in paise
     const amountInPaise = Math.round(totalAmount * 100);
 
+    // Create Razorpay order
     const razorpayOrder = await razorpay.orders.create({
       amount: amountInPaise,
       currency: "INR",
@@ -157,18 +187,27 @@ export const createOrder = async (req, res) => {
 
     return res.status(200).json({
       success: true,
+
       razorpayOrderId: razorpayOrder.id,
-      amount: totalAmount,         // ₹ (for display)
-      amountInPaise,               // paise (for Razorpay SDK)
+
+      // Amount in rupees
+      amount: totalAmount,
+
+      // Amount in paise
+      amountInPaise,
+
       currency: "INR",
-      keyId: process.env.RAZORPAY_KEY_ID, // PUBLIC key only — no secret
-      // Cart summary for the checkout page confirmation
+
+      // PUBLIC Razorpay key only
+      keyId: process.env.RAZORPAY_KEY_ID,
+
       subtotal: cartData.subtotal,
       deliveryFee: cartData.deliveryFee,
       itemCount: cartData.items.length,
     });
   } catch (error) {
     console.error("Create Order Error:", error);
+
     return res.status(500).json({
       success: false,
       message: "Failed to create payment order. Please try again.",
@@ -176,17 +215,10 @@ export const createOrder = async (req, res) => {
   }
 };
 
+// ─── VERIFY PAYMENT ──────────────────────────────────────────────────────
+
 /**
  * POST /api/payment/verify
- *
- * Razorpay payment verification — the ONLY place an order gets marked 'paid'.
- *
- * Receives: razorpay_order_id, razorpay_payment_id, razorpay_signature,
- *           shippingAddress
- *
- * 1. Reconstructs the HMAC-SHA256 signature on the backend using KEY_SECRET
- * 2. Compares to the signature sent by Razorpay's checkout SDK
- * 3. Only on match: creates Order, marks paymentStatus='paid', clears Cart
  */
 export const verifyPayment = async (req, res) => {
   try {
@@ -197,7 +229,7 @@ export const verifyPayment = async (req, res) => {
       shippingAddress,
     } = req.body;
 
-    // ── 1. Validate required fields ──────────────────────────────────────────
+    // Validate payment fields
     if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature) {
       return res.status(400).json({
         success: false,
@@ -205,6 +237,7 @@ export const verifyPayment = async (req, res) => {
       });
     }
 
+    // Validate shipping address
     if (
       !shippingAddress?.fullName ||
       !shippingAddress?.phone ||
@@ -219,8 +252,11 @@ export const verifyPayment = async (req, res) => {
       });
     }
 
-    // ── 2. Prevent duplicate order processing ────────────────────────────────
-    const existing = await Order.findOne({ razorpayOrderId: razorpay_order_id });
+    // Prevent duplicate order processing
+    const existing = await Order.findOne({
+      razorpayOrderId: razorpay_order_id,
+    });
+
     if (existing) {
       return res.status(200).json({
         success: true,
@@ -229,8 +265,9 @@ export const verifyPayment = async (req, res) => {
       });
     }
 
-    // ── 3. Verify HMAC-SHA256 signature — backend only ──────────────────────
+    // Verify Razorpay signature
     const body = `${razorpay_order_id}|${razorpay_payment_id}`;
+
     const expectedSignature = crypto
       .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET)
       .update(body)
@@ -243,8 +280,9 @@ export const verifyPayment = async (req, res) => {
       });
     }
 
-    // ── 4. Re-fetch cart with fresh prices (authoritative amount) ────────────
+    // Re-fetch cart with fresh prices
     let cartData;
+
     try {
       cartData = await getCartWithFreshPrices(req.user.id);
     } catch (err) {
@@ -253,7 +291,7 @@ export const verifyPayment = async (req, res) => {
         message: err.message || "Failed to process cart.",
       });
     }
-    
+
     if (!cartData) {
       return res.status(400).json({
         success: false,
@@ -261,64 +299,108 @@ export const verifyPayment = async (req, res) => {
       });
     }
 
-    // ── 4b. Apply seller-specific autoConfirmOrders logic ────────────────────
-    const sellerIds = [...new Set(cartData.items.map(item => item.seller?.toString()).filter(Boolean))];
-    const storeProfiles = await StoreProfile.find({ seller: { $in: sellerIds } });
-    const storeMap = new Map();
-    storeProfiles.forEach(profile => storeMap.set(profile.seller.toString(), profile));
+    // Seller IDs
+    const sellerIds = [
+      ...new Set(
+        cartData.items.map((item) => item.seller?.toString()).filter(Boolean),
+      ),
+    ];
 
-    cartData.items = cartData.items.map(item => {
+    const storeProfiles = await StoreProfile.find({
+      seller: { $in: sellerIds },
+    });
+
+    const storeMap = new Map();
+
+    storeProfiles.forEach((profile) => {
+      storeMap.set(profile.seller.toString(), profile);
+    });
+
+    // Apply autoConfirmOrders
+    cartData.items = cartData.items.map((item) => {
       const sellerIdStr = item.seller.toString();
+
       const profile = storeMap.get(sellerIdStr);
+
       if (profile && profile.autoConfirmOrders) {
         item.itemStatus = "confirmed";
       }
+
       return item;
     });
 
-    // ── 5. Create the Order document ─────────────────────────────────────────
+    // Create order
     const order = await Order.create({
       user: req.user.id,
+
       items: cartData.items,
+
       shippingAddress,
+
       subtotal: cartData.subtotal,
+
       deliveryFee: cartData.deliveryFee,
+
       totalAmount: cartData.totalAmount,
+
       paymentMethod: "razorpay",
+
       paymentStatus: "paid",
+
       orderStatus: "confirmed",
+
       razorpayOrderId: razorpay_order_id,
+
       razorpayPaymentId: razorpay_payment_id,
+
       razorpaySignature: razorpay_signature,
+
       paidAt: new Date(),
     });
 
-    // ── 5.5 Decrement Stock ──────────────────────────────────────────────────
+    // Decrease stock
     for (const item of cartData.items) {
       const updatedProduct = await Product.findByIdAndUpdate(
-        item.product, 
-        { $inc: { stock: -item.quantity } },
-        { new: false } // Returns the old document so we know previousStock
+        item.product,
+        {
+          $inc: {
+            stock: -item.quantity,
+          },
+        },
+        {
+          new: false,
+        },
       );
-      
+
       if (updatedProduct) {
         await InventoryTransaction.create({
           product: updatedProduct._id,
+
           seller: updatedProduct.seller,
+
           previousStock: updatedProduct.stock,
+
           change: -item.quantity,
+
           newStock: updatedProduct.stock - item.quantity,
+
           reason: "ORDER_PLACED",
+
           orderId: order._id,
-          user: req.user.id
+
+          user: req.user.id,
         });
       }
     }
 
-    // ── 6. Clear the user's cart ─────────────────────────────────────────────
+    // Clear cart
     await Cart.findOneAndUpdate(
       { user: req.user.id },
-      { $set: { items: [] } }
+      {
+        $set: {
+          items: [],
+        },
+      },
     );
 
     return res.status(201).json({
@@ -327,18 +409,21 @@ export const verifyPayment = async (req, res) => {
       order,
     });
   } catch (error) {
-    // Handle duplicate razorpayOrderId (race condition)
+    // Handle duplicate order
     if (error.code === 11000) {
       const existing = await Order.findOne({
         razorpayOrderId: req.body.razorpay_order_id,
       });
+
       return res.status(200).json({
         success: true,
         message: "Payment already verified.",
         order: existing,
       });
     }
+
     console.error("Verify Payment Error:", error);
+
     return res.status(500).json({
       success: false,
       message: "Payment verification failed. Please contact support.",
@@ -346,67 +431,115 @@ export const verifyPayment = async (req, res) => {
   }
 };
 
+// ─── GET MY ORDERS ────────────────────────────────────────────────────────
+
 /**
  * GET /api/payment/orders
- * Returns all orders for the authenticated user, newest first.
  */
 export const getMyOrders = async (req, res) => {
   try {
-    const orders = await Order.find({ user: req.user.id })
-      .sort({ createdAt: -1 })
+    const orders = await Order.find({
+      user: req.user.id,
+    })
+      .sort({
+        createdAt: -1,
+      })
       .populate("items.product", "name images price");
 
-    return res.status(200).json({ success: true, orders });
+    return res.status(200).json({
+      success: true,
+      orders,
+    });
   } catch (error) {
     console.error("Get Orders Error:", error);
-    return res.status(500).json({ success: false, message: "Server error" });
+
+    return res.status(500).json({
+      success: false,
+      message: "Server error",
+    });
   }
 };
 
+// ─── GET ALL ORDERS ───────────────────────────────────────────────────────
+
 /**
  * GET /api/payment/admin/orders
- * Admin route to get all orders in the platform
  */
 export const getAllOrders = async (req, res) => {
   try {
     const orders = await Order.find({})
-      .sort({ createdAt: -1 })
+      .sort({
+        createdAt: -1,
+      })
       .populate("user", "name email")
       .populate("items.product", "name images price");
 
-    return res.status(200).json({ success: true, orders });
+    return res.status(200).json({
+      success: true,
+      orders,
+    });
   } catch (error) {
     console.error("Get All Orders Error:", error);
-    return res.status(500).json({ success: false, message: "Server error" });
+
+    return res.status(500).json({
+      success: false,
+      message: "Server error",
+    });
   }
 };
 
+// ─── UPDATE ORDER STATUS ──────────────────────────────────────────────────
+
 /**
  * PUT /api/payment/admin/orders/:id/status
- * Admin route to update the status of an order
  */
 export const updateOrderStatus = async (req, res) => {
   try {
     const { status } = req.body;
-    const allowedStatuses = ["pending", "confirmed", "processing", "shipped", "delivered", "cancelled"];
-    
+
+    const allowedStatuses = [
+      "pending",
+      "confirmed",
+      "processing",
+      "shipped",
+      "delivered",
+      "cancelled",
+    ];
+
     if (!allowedStatuses.includes(status)) {
-      return res.status(400).json({ success: false, message: "Invalid status" });
+      return res.status(400).json({
+        success: false,
+        message: "Invalid status",
+      });
     }
 
     const order = await Order.findByIdAndUpdate(
       req.params.id,
-      { orderStatus: status },
-      { new: true }
+      {
+        orderStatus: status,
+      },
+      {
+        new: true,
+      },
     ).populate("user", "name email");
 
     if (!order) {
-      return res.status(404).json({ success: false, message: "Order not found" });
+      return res.status(404).json({
+        success: false,
+        message: "Order not found",
+      });
     }
 
-    return res.status(200).json({ success: true, order });
+    return res.status(200).json({
+      success: true,
+      order,
+    });
   } catch (error) {
     console.error("Update Order Status Error:", error);
-    return res.status(500).json({ success: false, message: "Server error" });
+
+    return res.status(500).json({
+      success: false,
+      message: "Server error",
+    });
   }
 };
