@@ -455,21 +455,169 @@ export const forgotPassword = async (req, res) => {
     // 7. Save changes
     await user.save();
 
-    const resetUrl = `http://localhost:5173/reset-password/${resetToken}`;
+    const resetUrl = `${process.env.CLIENT_URL}/reset-password/${resetToken}`;
 
     const message = `
-      <h2>VendorHub Password Reset</h2>
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Reset Your VendorHub Password</title>
+</head>
 
-      <p>You requested to reset your VendorHub password.</p>
+<body style="
+  margin: 0;
+  padding: 0;
+  background-color: #f4f7fb;
+  font-family: Arial, Helvetica, sans-serif;
+">
 
-      <p>
-          <a href="${resetUrl}">
-              Reset Password
-          </a>
+  <div style="
+    max-width: 600px;
+    margin: 40px auto;
+    background-color: #ffffff;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+  ">
+
+    <!-- Header -->
+    <div style="
+      background: #111827;
+      padding: 28px;
+      text-align: center;
+    ">
+      <h1 style="
+        margin: 0;
+        color: #ffffff;
+        font-size: 28px;
+      ">
+        VendorHub
+      </h1>
+
+      <p style="
+        margin: 8px 0 0;
+        color: #9ca3af;
+        font-size: 14px;
+      ">
+        Your trusted vendor platform
+      </p>
+    </div>
+
+    <!-- Content -->
+    <div style="padding: 40px 35px;">
+
+      <h2 style="
+        margin-top: 0;
+        color: #111827;
+        font-size: 24px;
+      ">
+        Reset Your Password 🔐
+      </h2>
+
+      <p style="
+        color: #4b5563;
+        font-size: 15px;
+        line-height: 1.7;
+      ">
+        We received a request to reset your VendorHub account password.
+        Click the button below to create a new password.
       </p>
 
-      <p>This link will expire in 15 minutes.</p>
-    `;
+      <!-- Button -->
+      <div style="
+        text-align: center;
+        margin: 32px 0;
+      ">
+        <a href="${resetUrl}" style="
+          display: inline-block;
+          padding: 14px 28px;
+          background-color: #2563eb;
+          color: #ffffff;
+          text-decoration: none;
+          border-radius: 8px;
+          font-size: 15px;
+          font-weight: bold;
+        ">
+          Reset My Password
+        </a>
+      </div>
+
+      <p style="
+        color: #6b7280;
+        font-size: 14px;
+        line-height: 1.6;
+      ">
+        This password reset link will expire in
+        <strong>15 minutes</strong>.
+      </p>
+
+      <div style="
+        margin: 25px 0;
+        padding: 15px;
+        background-color: #f9fafb;
+        border-left: 4px solid #2563eb;
+      ">
+        <p style="
+          margin: 0;
+          color: #6b7280;
+          font-size: 13px;
+          line-height: 1.5;
+        ">
+          If you didn't request a password reset, you can safely ignore
+          this email. Your password will remain unchanged.
+        </p>
+      </div>
+
+      <p style="
+        color: #4b5563;
+        font-size: 14px;
+        line-height: 1.6;
+      ">
+        If the button doesn't work, copy and paste the following link
+        into your browser:
+      </p>
+
+      <p style="
+        word-break: break-all;
+        font-size: 12px;
+        color: #2563eb;
+      ">
+        ${resetUrl}
+      </p>
+
+    </div>
+
+    <!-- Footer -->
+    <div style="
+      padding: 20px 30px;
+      background-color: #f9fafb;
+      text-align: center;
+      border-top: 1px solid #e5e7eb;
+    ">
+      <p style="
+        margin: 0;
+        color: #9ca3af;
+        font-size: 12px;
+      ">
+        © ${new Date().getFullYear()} VendorHub. All rights reserved.
+      </p>
+
+      <p style="
+        margin: 6px 0 0;
+        color: #9ca3af;
+        font-size: 12px;
+      ">
+        This is an automated email. Please do not reply.
+      </p>
+    </div>
+
+  </div>
+
+</body>
+</html>
+`;
 
     try {
       await sendEmail({
@@ -509,10 +657,7 @@ export const resetPassword = async (req, res) => {
     const { password } = req.body;
 
     // Hash the token
-    const hashedToken = crypto
-      .createHash("sha256")
-      .update(token)
-      .digest("hex");
+    const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
 
     // Find user with valid token
     const user = await User.findOne({
