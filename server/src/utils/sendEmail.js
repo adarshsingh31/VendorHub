@@ -2,15 +2,17 @@ import nodemailer from "nodemailer";
 
 const sendEmail = async (options) => {
     const transporter = nodemailer.createTransport({
-        service: "gmail",
+        host: "smtp.gmail.com",
+        port: 587,
+        secure: false, // TLS via STARTTLS
         auth: {
             user: process.env.EMAIL_USER,
-            pass: process.env.EMAIL_PASSWORD
+            pass: process.env.EMAIL_PASS
         }
     });
 
     const mailOptions = {
-        from: process.env.EMAIL_USER,
+        from: `"VendorHub" <${process.env.EMAIL_USER}>`,
         to: options.email,
         subject: options.subject,
         html: options.message
